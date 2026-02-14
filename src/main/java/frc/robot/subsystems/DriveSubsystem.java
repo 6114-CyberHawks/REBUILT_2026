@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Units;
 
 //These liberaries are removed and updated to use the liberary for the NavX3.
 //import edu.wpi.first.wpilibj.ADIS16470_IMU;
@@ -48,7 +49,7 @@ public class DriveSubsystem extends SubsystemBase {
       DriveConstants.kBackRightChassisAngularOffset);
 
   // The gyro sensor
-  private final Navx m_gyro = new Navx(11);
+  public final Navx m_gyro = new Navx(0);
   //private final ADIS16470_IMU archived_m_gyro = new ADIS16470_IMU();
   // unused -- maybe for later
   PIDController DrivePID = new PIDController(0.75, 0, 0.15);
@@ -61,7 +62,7 @@ public class DriveSubsystem extends SubsystemBase {
       DriveConstants.kDriveKinematics,
       //Rotation2d.fromDegrees(archived_m_gyro.getAngle(IMUAxis.kZ)),
       //m_gyro.getYaw().toString().replaceAll("[^0-9.]", "")) is the new convertion for angle to doubles
-      Rotation2d.fromDegrees(Double.parseDouble(m_gyro.getYaw().toString().replaceAll("[^0-9.]", ""))),
+      Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degree)),
       new SwerveModulePosition[] {
           m_frontLeft.getPosition(),
           m_frontRight.getPosition(),
@@ -79,7 +80,7 @@ public class DriveSubsystem extends SubsystemBase {
   public void periodic() {
     // Update the odometry in the periodic block
     m_odometry.update(
-        Rotation2d.fromDegrees(Double.parseDouble(m_gyro.getYaw().toString().replaceAll("[^0-9.]", ""))),
+        Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degree)),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
             m_frontRight.getPosition(),
@@ -104,7 +105,7 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public void resetOdometry(Pose2d pose) {
     m_odometry.resetPosition(
-        Rotation2d.fromDegrees(Double.parseDouble(m_gyro.getYaw().toString().replaceAll("[^0-9.]", ""))),
+        Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degree)),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
             m_frontRight.getPosition(),
@@ -132,7 +133,7 @@ public class DriveSubsystem extends SubsystemBase {
     var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
         fieldRelative
             ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered,
-                Rotation2d.fromDegrees(Double.parseDouble(m_gyro.getYaw().toString().replaceAll("[^0-9.]", ""))))
+                Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degree)))
             : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
     SwerveDriveKinematics.desaturateWheelSpeeds(
         swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
@@ -187,7 +188,7 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public double getHeading() {
     //return Rotation2d.fromDegrees(archived_m_gyro.getAngle(IMUAxis.kZ)).getDegrees();
-    return Double.parseDouble(m_gyro.getYaw().toString().replaceAll("[^0-9.]", ""));
+    return m_gyro.getYaw().in(Units.Degree);
   }
 
   /**

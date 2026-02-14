@@ -41,17 +41,21 @@ public class RobotContainer {
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
 
-  PIDController DrivePID = new PIDController(0.75, 0, 0.15);
-  PIDController RotationPID = new PIDController(0.1, 0, 0);
-  PIDController StrafePID = new PIDController(1, 0, 0.15);
-
-  //temporary import
-  //private final Navx m_gyro = new Navx(11);
-
   // Creates a SlewRateLimiter that limits the rate of change of the signal to 0.5 units per second
   //SlewRateLimiter filter = new SlewRateLimiter(0.01);
 
+  double modifyAxis(double value, double exponent) {
+      value = MathUtil.applyDeadband(value, 0.22 /* orginal: 0.12; Deadband */);
 
+      return Math.copySign(Math.pow(Math.abs(value), exponent), value);
+    }
+
+    double modifyAxis(double value, double exponent, double deadband) {
+      value = MathUtil.applyDeadband(value, deadband);
+
+      return Math.copySign(Math.pow(Math.abs(value), exponent), value);
+    }
+  
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -65,9 +69,15 @@ public class RobotContainer {
         // Turning is controlled by the X axis of the right stick.
         new RunCommand(
             () -> m_robotDrive.drive(
-                -MathUtil.applyDeadband(/*DrivePID.calculate(0.005   test failed.,*/ MathUtil.clamp(m_driverController.getLeftY(), -0.15, 0.15)/*)*/, OIConstants.kDriveDeadband), // Drive
-                -MathUtil.applyDeadband(MathUtil.clamp(m_driverController.getLeftX(), -0.15, 0.15), OIConstants.kDriveDeadband), // Strafe
-                -MathUtil.applyDeadband(MathUtil.clamp(m_driverController.getRightX(), -0.5, 0.5), OIConstants.kDriveDeadband), // Rotation
+              /*
+                -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband), // Drive
+                -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband), // Strafe
+                -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband), // Rotation
+              */
+                -modifyAxis(m_driverController.getLeftY(), 4.0, 0.02),
+                -modifyAxis(m_driverController.getLeftX(), 4.0, 0.02),
+                -modifyAxis(m_driverController.getRightX(), 4.5, 0.02),
+              
                 true),
             m_robotDrive));
   }

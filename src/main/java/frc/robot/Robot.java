@@ -5,8 +5,13 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+//import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.OIConstants;
+//import frc.robot.subsystems.DriveSubsystem;
+
 //import edu.wpi.first.wpilibj.XboxController;
 
 /**
@@ -19,6 +24,9 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+
+  //private final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -91,13 +99,12 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     /*
-    int FrontDrivingVel = XboxController.Axis.kLeftY.value;
-    int FrontDrivingDirect = XboxController.Axis.kLeftX.value;
-    int BackDrivingVel = XboxController.Axis.kRightY.value;
-    int BackDrivingDirect = XboxController.Axis.kRightX.value;
-
-    //drive();
+    if ((m_driverController.getLeftY() >= 0.9) || (m_driverController.getLeftY() <= -0.9)) {m_driverController.setRumble(RumbleType.kLeftRumble, 0.5);} else {m_driverController.setRumble(RumbleType.kLeftRumble, 0.0);}
+    if ((m_driverController.getLeftX() >= 0.9) || (m_driverController.getLeftX() <= -0.9)) {m_driverController.setRumble(RumbleType.kLeftRumble, 0.5);} else {m_driverController.setRumble(RumbleType.kLeftRumble, 0.0);}
+    if ((m_driverController.getRightX() >= 0.9) || (m_driverController.getRightX() <= -0.9)) {m_driverController.setRumble(RumbleType.kRightRumble, 0.5);} else {m_driverController.setRumble(RumbleType.kRightRumble, 0.0);}
     */
+
+    //System.out.println(m_gryo.getYaw());
   }
 
   @Override
