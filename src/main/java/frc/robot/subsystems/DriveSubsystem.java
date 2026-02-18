@@ -7,7 +7,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -20,6 +19,7 @@ import edu.wpi.first.units.Units;
 //These liberaries are removed and updated to use the liberary for the NavX3.
 //import edu.wpi.first.wpilibj.ADIS16470_IMU;
 //import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
+
 //NavX3 liberary
 import com.studica.frc.Navx;
 
@@ -27,6 +27,9 @@ import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
+
+  public boolean rotateBool = false;
+  
   // Create MAXSwerveModules
   private final MAXSwerveModule m_frontLeft = new MAXSwerveModule(
       DriveConstants.kFrontLeftDrivingCanId,
@@ -49,13 +52,8 @@ public class DriveSubsystem extends SubsystemBase {
       DriveConstants.kBackRightChassisAngularOffset);
 
   // The gyro sensor
-  public final Navx m_gyro = new Navx(0);
+  public final static Navx m_gyro = new Navx(0);
   //private final ADIS16470_IMU archived_m_gyro = new ADIS16470_IMU();
-  // unused -- maybe for later
-  PIDController DrivePID = new PIDController(0.75, 0, 0.15);
-  PIDController RotationPID = new PIDController(0.1, 0, 0);
-  PIDController StrafePID = new PIDController(1, 0, 0.15);
-  
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
@@ -180,6 +178,45 @@ public class DriveSubsystem extends SubsystemBase {
     m_gyro.resetYaw();
     //archived_m_gyro.reset();
   }
+
+public void StopAtAngle(int angle, double rot) {
+    double rotationSpeed;
+    if (m_gyro.getYaw().in(Units.Degree) <= angle + 3 && m_gyro.getYaw().in(Units.Degree) >= angle - 3) {
+      rotationSpeed = 0;
+      rotateBool = true;
+    } else {
+      if (angle > m_gyro.getYaw().in(Units.Degree)) {
+        rotationSpeed = -rot;
+      } else {
+        rotationSpeed = rot;
+      }
+      rotateBool = false;
+    }
+    drive(0, 0, rotationSpeed, true);
+  }
+
+  public void StopAtPosition(Double posX, double posY, double speed, double currentPosX, double currentPosY) {
+    double tempXSpeed;
+    double tempYSpeed;
+    if (getPose().getX() <= posX + .1 && getPose().getX() >= posX - .1) {
+      tempXSpeed = 0.0;
+    } else {
+      tempXSpeed = speed;
+      if (currentPosX > posX) {
+        tempXSpeed *= -1.0;
+      }
+    }
+    if (getPose().getY() <= posY + .1 && getPose().getY() >= posY - .1) {
+      tempYSpeed = 0.0;
+    } else {
+      tempYSpeed = speed;
+      if (currentPosY > posY) {
+        tempYSpeed *= -1.0;
+      }
+    }
+    drive(tempXSpeed, 0, 0, true);
+  }
+
 
   /**
    * Returns the heading of the robot.

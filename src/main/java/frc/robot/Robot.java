@@ -99,11 +99,14 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     /*
-    if ((m_driverController.getLeftY() >= 0.9) || (m_driverController.getLeftY() <= -0.9)) {m_driverController.setRumble(RumbleType.kLeftRumble, 0.5);} else {m_driverController.setRumble(RumbleType.kLeftRumble, 0.0);}
+    if ((m_driverController.getLeftY() >= 0.9) || (m_driverController.getLeftX() <= -0.9)) {m_driverController.setRumble(RumbleType.kLeftRumble, 0.5);} else {m_driverController.setRumble(RumbleType.kLeftRumble, 0.0);}
     if ((m_driverController.getLeftX() >= 0.9) || (m_driverController.getLeftX() <= -0.9)) {m_driverController.setRumble(RumbleType.kLeftRumble, 0.5);} else {m_driverController.setRumble(RumbleType.kLeftRumble, 0.0);}
     if ((m_driverController.getRightX() >= 0.9) || (m_driverController.getRightX() <= -0.9)) {m_driverController.setRumble(RumbleType.kRightRumble, 0.5);} else {m_driverController.setRumble(RumbleType.kRightRumble, 0.0);}
     */
+    
+    System.out.printf("LeftY: %f; LeftX: %f; RightX: %f", m_driverController.getLeftY(), m_driverController.getLeftX(), m_driverController.getRightX());
 
+    
     //System.out.println(m_gryo.getYaw());
   }
 

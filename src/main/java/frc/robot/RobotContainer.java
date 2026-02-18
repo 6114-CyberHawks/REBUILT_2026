@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.commands.Autonomous;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -35,6 +36,10 @@ import java.util.List;
  * (including subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+  
+  // Commands : naming convention is c_ for command
+  private final Autonomous c_Autonomous;
+
   // The robot's subsystems
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
 
@@ -60,6 +65,7 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+    c_Autonomous = new Autonomous(m_robotDrive);
     // Configure the button bindings
     configureButtonBindings();
 
@@ -74,9 +80,9 @@ public class RobotContainer {
                 -MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband), // Strafe
                 -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband), // Rotation
               */
-                -modifyAxis(m_driverController.getLeftY(), 4.0, 0.02),
-                -modifyAxis(m_driverController.getLeftX(), 4.0, 0.02),
-                -modifyAxis(m_driverController.getRightX(), 4.5, 0.02),
+                -modifyAxis(m_driverController.getLeftY(), 3.5, 0.075),
+                -modifyAxis(m_driverController.getLeftX(), 3.5, 0.075),
+                -modifyAxis(m_driverController.getRightX(), 4, 0.075),
               
                 true),
             m_robotDrive));
@@ -105,6 +111,7 @@ public class RobotContainer {
             m_robotDrive));
   }
 
+  
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
@@ -148,6 +155,7 @@ public class RobotContainer {
     m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
-    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
+    //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
+    return c_Autonomous;
   }
 }
