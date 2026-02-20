@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DIOPortIDs;
 import frc.robot.Constants.MotorIDs;
+import frc.robot.commands.MotorFollowerConstants;
 import frc.robot.Constants.NeoMotorConstants;
 
 public class TurretSubsystem extends SubsystemBase {
@@ -53,12 +54,19 @@ public class TurretSubsystem extends SubsystemBase {
         .smartCurrentLimit(NeoMotorConstants.bigMotorCurrentLimit).idleMode(IdleMode.kCoast).closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
 
-    SparkMaxConfig ShootFollowerConfig = new SparkMaxConfig(); // follower shooters
+    SparkMaxConfig ShootFollower1Config = new SparkMaxConfig(); // follower shooters
     ShootFollowerConfig
         .smartCurrentLimit(NeoMotorConstants.bigMotorCurrentLimit).idleMode(IdleMode.kCoast).closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
     ShootFollowerConfig
-        .follow(TurretShootLeader, true);
+        .follow(TurretShootLeader, MotorFollowerConstants.Follower1IsOppositeOrientationAsLeader);
+
+        SparkMaxConfig ShootFollower2Config = new SparkMaxConfig(); // follower shooters
+    ShootFollowerConfig
+        .smartCurrentLimit(NeoMotorConstants.bigMotorCurrentLimit).idleMode(IdleMode.kCoast).closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+    ShootFollowerConfig
+        .follow(TurretShootLeader, MotorFollowerConstants.Follower2IsOppositeOrientationAsLeader);
 
     SparkMaxConfig FeedConfig = new SparkMaxConfig(); // feed
     FeedConfig
@@ -73,9 +81,9 @@ public class TurretSubsystem extends SubsystemBase {
     // keep motor config over powercycle
     TurretShootLeader.configure(ShootLeaderConfig, SparkBase.ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
-    TurretShootFollower1.configure(ShootFollowerConfig, SparkBase.ResetMode.kResetSafeParameters,
+    TurretShootFollower1.configure(ShootFollower1Config, SparkBase.ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
-    TurretShootFollower2.configure(ShootFollowerConfig, SparkBase.ResetMode.kResetSafeParameters,
+    TurretShootFollower2.configure(ShootFollower2Config, SparkBase.ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
 
     FeedTurret.configure(FeedConfig, SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);

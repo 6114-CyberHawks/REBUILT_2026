@@ -17,10 +17,17 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+  public static class MotorFollowerConstants {
+    public static final bool Follower1IsOppositeOrientationAsLeader = false;
+    public static final bool Follower2IsOppositeOrientationAsLeader = true;
+
+  }
+  
   public static class MotorIDs {
-    public static final int TurretShoot1 = 0;
-    public static final int TurretShoot2 = 0;
-    public static final int TurretShoot3 = 0;
+    public static final int TurretShootLeader = 0;
+    public static final int TurretShootFollower1 = 0;
+    public static final int TurretShootFollower2 = 0;
     public static final int FeedTurret = 0;
     public static final int TurretHood = 0;
   }
