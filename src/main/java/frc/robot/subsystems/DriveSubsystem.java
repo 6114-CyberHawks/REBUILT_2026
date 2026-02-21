@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -16,9 +17,10 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
 
+import edu.wpi.first.math.controller.PIDController;
 //These liberaries are removed and updated to use the liberary for the NavX3.
 //import edu.wpi.first.wpilibj.ADIS16470_IMU;
-//import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
+//import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;s
 
 //NavX3 liberary
 import com.studica.frc.Navx;
@@ -28,6 +30,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
 
+  private final PIDController m_headingController = new PIDController(0.02, 0.0, 0.001);
+  
   public boolean rotateBool = false;
   
   // Create MAXSwerveModules
@@ -51,16 +55,18 @@ public class DriveSubsystem extends SubsystemBase {
       DriveConstants.kRearRightTurningCanId,
       DriveConstants.kBackRightChassisAngularOffset);
 
+  
   // The gyro sensor
-  public final static Navx m_gyro = new Navx(0);
-  //private final ADIS16470_IMU archived_m_gyro = new ADIS16470_IMU();
+  public final static Navx m_gyro = new Navx(0, 100);
+  //public final static ADIS16470_IMU archived_m_gyro = new ADIS16470_IMU();
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
       DriveConstants.kDriveKinematics,
       //Rotation2d.fromDegrees(archived_m_gyro.getAngle(IMUAxis.kZ)),
       //m_gyro.getYaw().toString().replaceAll("[^0-9.]", "")) is the new convertion for angle to doubles
-      Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degree)),
+      //m_gyro.getYaw().in(Units.Degrees) ;; new conversion
+      Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degrees)),
       new SwerveModulePosition[] {
           m_frontLeft.getPosition(),
           m_frontRight.getPosition(),
@@ -72,13 +78,17 @@ public class DriveSubsystem extends SubsystemBase {
   public DriveSubsystem() {
     // Usage reporting for MAXSwerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
+    
+    m_headingController.setTolerance(1.0,2.0);
+
+    m_headingController.enableContinuousInput(-180, 180);
   }
 
   @Override
   public void periodic() {
     // Update the odometry in the periodic block
     m_odometry.update(
-        Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degree)),
+        Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degrees)),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
             m_frontRight.getPosition(),
@@ -103,7 +113,7 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public void resetOdometry(Pose2d pose) {
     m_odometry.resetPosition(
-        Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degree)),
+        Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degrees)),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
             m_frontRight.getPosition(),
@@ -131,7 +141,7 @@ public class DriveSubsystem extends SubsystemBase {
     var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
         fieldRelative
             ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered,
-                Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degree)))
+                Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degrees)))
             : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
     SwerveDriveKinematics.desaturateWheelSpeeds(
         swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
@@ -181,11 +191,11 @@ public class DriveSubsystem extends SubsystemBase {
 
 public void StopAtAngle(int angle, double rot) {
     double rotationSpeed;
-    if (m_gyro.getYaw().in(Units.Degree) <= angle + 3 && m_gyro.getYaw().in(Units.Degree) >= angle - 3) {
+    if (Math.round(getHeading()) <= angle + 5 && Math.round(getHeading()) >= angle - 5) {
       rotationSpeed = 0;
       rotateBool = true;
     } else {
-      if (angle > m_gyro.getYaw().in(Units.Degree)) {
+      if (angle > getHeading()) {
         rotationSpeed = -rot;
       } else {
         rotationSpeed = rot;
@@ -195,9 +205,22 @@ public void StopAtAngle(int angle, double rot) {
     drive(0, 0, rotationSpeed, true);
   }
 
+public void StopAtAngle(int angle, double rot, boolean OverloadNewFunction) {
+
+  if (m_headingController.atSetpoint()) {
+    drive(0,0,0, false);
+    return;
+  }
+    double rotationOutput = m_headingController.calculate(getHeading(), angle);
+
+    rotationOutput = MathUtil.clamp(rotationOutput, -rot, rot);
+
+    drive(0, 0, rotationOutput, false);
+  }
+
   public void StopAtPosition(Double posX, double posY, double speed, double currentPosX, double currentPosY) {
     double tempXSpeed;
-    double tempYSpeed;
+    //double tempYSpeed;
     if (getPose().getX() <= posX + .1 && getPose().getX() >= posX - .1) {
       tempXSpeed = 0.0;
     } else {
@@ -205,7 +228,8 @@ public void StopAtAngle(int angle, double rot) {
       if (currentPosX > posX) {
         tempXSpeed *= -1.0;
       }
-    }
+    /* Uses TempYSpeed, even though we don't use it for the final drive function call.
+
     if (getPose().getY() <= posY + .1 && getPose().getY() >= posY - .1) {
       tempYSpeed = 0.0;
     } else {
@@ -213,7 +237,9 @@ public void StopAtAngle(int angle, double rot) {
       if (currentPosY > posY) {
         tempYSpeed *= -1.0;
       }
+      */
     }
+    
     drive(tempXSpeed, 0, 0, true);
   }
 
@@ -224,8 +250,8 @@ public void StopAtAngle(int angle, double rot) {
    * @return the robot's heading in degrees, from -180 to 180
    */
   public double getHeading() {
-    //return Rotation2d.fromDegrees(archived_m_gyro.getAngle(IMUAxis.kZ)).getDegrees();
-    return m_gyro.getYaw().in(Units.Degree);
+    //return Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degrees)).getDegrees();
+    return m_gyro.getYaw().in(Units.Degrees);
   }
 
   /**
@@ -235,6 +261,7 @@ public void StopAtAngle(int angle, double rot) {
    */
   public double getTurnRate() {
     //return archived_m_gyro.getRate(IMUAxis.kZ) * (DriveConstants.kGyroReversed ? -1.0 : 1.0);
-    return Double.valueOf((m_gyro.getAngularVel())[1].toString());
+    return Double.valueOf((m_gyro.getAngularVel())[1].toString());// -- not tested
+    //return m_gyro.getAngularVel()[1] * (DriveConstants.kGyroReversed ? -1.0 : 1.0); // newer version -- not tested
   }
 }

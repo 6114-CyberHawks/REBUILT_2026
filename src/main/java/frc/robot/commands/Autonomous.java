@@ -5,11 +5,16 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.units.Units;
-//import edu.wpi.first.math.util.Units;
+import static edu.wpi.first.units.Units.Degrees;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DriveSubsystem;
+/*
+import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
+import edu.wpi.first.math.MathUtil;
+*/
+import edu.wpi.first.math.util.Units;
 
 public class Autonomous extends Command {
   private final DriveSubsystem driveSubsystem;
@@ -37,13 +42,23 @@ public class Autonomous extends Command {
   public void execute() {
 // Default Auton, 1 coral + leave
 
-    System.out.println(driveSubsystem.getPose().getX() + " " + driveSubsystem.getPose().getY() + " Raw Rot: " + DriveSubsystem.m_gyro.getYaw() + " Rot: " + DriveSubsystem.m_gyro.getYaw().in(Units.Degree));
-
+    System.out.println("X axis(??) position of robot (estimated): " +
+    driveSubsystem.getPose().getX() + ", Y axis(??) position of robot (estimated): " +
+    driveSubsystem.getPose().getY() + ", Rotation of robot (estimated): " +
+    driveSubsystem.getPose().getRotation().getDegrees() + ", Raw Rotation: " +
+    DriveSubsystem.m_gyro.getYaw().in(Degrees) /* I don't know why it doesn't work, sorry...; .getYawAxis()*/ + ", Rotation: " +
+    Math.round(DriveSubsystem.m_gyro.getYaw().in(Degrees)) /*Removed due to loop overrunning + ", Gryo Yaw Reset(?) (0: OK, 1: ERROR): " + DriveSubsystem.m_gyro.resetYaw()*/);
+    
     if (timer.get() < 3.5 && timer.get() > 0) {
-      //driveSubsystem.StopAtPosition(Units.inchesToMeters(31), 0.0, .3, 0, 0);
-    } if (timer.get() < 8.5 && timer.get() > 3.5) {
-      driveSubsystem.StopAtAngle(180, 0.3);
-    } if (timer.get() > 8.5) {
+      driveSubsystem.StopAtAngle(0, 0.25, true);
+    }
+    if (timer.get() < 7 && timer.get() > 3.5) {
+      //driveSubsystem.StopAtPosition(Units.inchesToMeters(72), 0.0, .3, 0, 0);
+    }
+    if (timer.get() < 10.5 && timer.get() > 7) {
+      driveSubsystem.StopAtAngle(180, 0.75, true);
+    }
+    if (timer.get() > 11.5) {
       driveSubsystem.drive(0, 0, 0, false);
     }
   }

@@ -4,13 +4,19 @@
 
 package frc.robot;
 
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.util.Color;
 //import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.OIConstants;
-//import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.DriveSubsystem;
 
 //import edu.wpi.first.wpilibj.XboxController;
 
@@ -21,6 +27,21 @@ import frc.robot.Constants.OIConstants;
  * project.
  */
 public class Robot extends TimedRobot {
+
+  // LED variables and constants
+  private AddressableLED FrontLEDBar;
+  private AddressableLED BackLEDBar;
+  private AddressableLEDBuffer LEDBarBuffer;
+  private final LEDPattern offLEDs = LEDPattern.kOff;
+  private final LEDPattern greenLEDs = LEDPattern.solid(Color.kGreen);
+  private final LEDPattern purpleLEDs = LEDPattern.solid(Color.kMidnightBlue);
+  private final LEDPattern redLEDs = LEDPattern.solid(Color.kRed);
+  private final LEDPattern rainbowLEDs = LEDPattern.rainbow(255, 128);
+  private final LEDPattern orangeLEDs = LEDPattern.solid(Color.kOrange);
+  // Our LED strip has a density of 12 LEDs per meter
+  private static final Distance kLedSpacing = Units.Meters.of(1 / 12.0);
+  private final LEDPattern scrollingRainbowLEDs = rainbowLEDs.scrollAtAbsoluteSpeed(Units.MetersPerSecond.of(1), kLedSpacing);
+  
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
@@ -34,6 +55,25 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    // The gyro sensor  
+    DriveSubsystem.m_gyro.enableOptionalMessages(true,
+    false,
+    false,
+    false,
+    true, 
+  false,
+  false,
+  false,
+  false);
+
+    // Setup LED Bars
+    LEDBarBuffer = new AddressableLEDBuffer(15); // Number of LEDs we want to control
+
+    FrontLEDBar = new AddressableLED(1); // LED bar connected to PWM port 0 on RoboRio
+    FrontLEDBar.setLength(LEDBarBuffer.getLength());
+    FrontLEDBar.setData(LEDBarBuffer);
+    FrontLEDBar.start();
+
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
@@ -57,7 +97,10 @@ public class Robot extends TimedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    offLEDs.applyTo(LEDBarBuffer);
+    FrontLEDBar.setData(LEDBarBuffer);
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -114,6 +157,10 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+
+    scrollingRainbowLEDs.applyTo(LEDBarBuffer);
+    // update LED Bar depending on buffer
+    FrontLEDBar.setData(LEDBarBuffer);
   }
 
   /** This function is called periodically during test mode. */
