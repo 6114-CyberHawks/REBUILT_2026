@@ -61,9 +61,9 @@ public class Robot extends TimedRobot {
     false,
     false,
     true, 
+  true,
   false,
-  false,
-  false,
+  true,
   false);
 
     // Setup LED Bars

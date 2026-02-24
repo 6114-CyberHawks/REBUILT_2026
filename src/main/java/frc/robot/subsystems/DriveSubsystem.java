@@ -221,7 +221,7 @@ public void StopAtAngle(int angle, double rot, boolean OverloadNewFunction) {
   public void StopAtPosition(Double posX, double posY, double speed, double currentPosX, double currentPosY) {
     double tempXSpeed;
     //double tempYSpeed;
-    if (getPose().getX() <= posX + .1 && getPose().getX() >= posX - .1) {
+    if (Math.round(getPose().getX()) <= posX + .1 && Math.round(getPose().getX()) >= posX - .1) {
       tempXSpeed = 0.0;
     } else {
       tempXSpeed = speed;

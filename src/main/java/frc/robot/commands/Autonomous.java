@@ -46,14 +46,16 @@ public class Autonomous extends Command {
     driveSubsystem.getPose().getX() + ", Y axis(??) position of robot (estimated): " +
     driveSubsystem.getPose().getY() + ", Rotation of robot (estimated): " +
     driveSubsystem.getPose().getRotation().getDegrees() + ", Raw Rotation: " +
-    DriveSubsystem.m_gyro.getYaw().in(Degrees) /* I don't know why it doesn't work, sorry...; .getYawAxis()*/ + ", Rotation: " +
-    Math.round(DriveSubsystem.m_gyro.getYaw().in(Degrees)) /*Removed due to loop overrunning + ", Gryo Yaw Reset(?) (0: OK, 1: ERROR): " + DriveSubsystem.m_gyro.resetYaw()*/);
+    DriveSubsystem.m_gyro.getYaw().in(Degrees) + ", Rotation: " +
+    Math.round(DriveSubsystem.m_gyro.getYaw().in(Degrees)) + ", Compass: " +
+    DriveSubsystem.m_gyro.getCompass(null)
+    );
     
     if (timer.get() < 3.5 && timer.get() > 0) {
       driveSubsystem.StopAtAngle(0, 0.25, true);
     }
     if (timer.get() < 7 && timer.get() > 3.5) {
-      //driveSubsystem.StopAtPosition(Units.inchesToMeters(72), 0.0, .3, 0, 0);
+      //driveSubsystem.StopAtPosition(Units.inchesToMeters(72), 0.0, .3, 0, 0); broken for some reason
     }
     if (timer.get() < 10.5 && timer.get() > 7) {
       driveSubsystem.StopAtAngle(180, 0.75, true);
