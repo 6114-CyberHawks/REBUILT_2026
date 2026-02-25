@@ -47,20 +47,22 @@ public class Autonomous extends Command {
     driveSubsystem.getPose().getY() + ", Rotation of robot (estimated): " +
     driveSubsystem.getPose().getRotation().getDegrees() + ", Raw Rotation: " +
     DriveSubsystem.m_gyro.getYaw().in(Degrees) + ", Rotation: " +
-    Math.round(DriveSubsystem.m_gyro.getYaw().in(Degrees)) + ", Compass: " +
-    DriveSubsystem.m_gyro.getCompass(null)
+    Math.round(DriveSubsystem.m_gyro.getYaw().in(Degrees))
     );
     
     if (timer.get() < 3.5 && timer.get() > 0) {
-      driveSubsystem.StopAtAngle(0, 0.25, true);
+      //driveSubsystem.StopAtAngle(0, 0.25, true);
     }
     if (timer.get() < 7 && timer.get() > 3.5) {
-      //driveSubsystem.StopAtPosition(Units.inchesToMeters(72), 0.0, .3, 0, 0); broken for some reason
+      driveSubsystem.StopAtPosition(Units.inchesToMeters(10), 0.0, .1, 0, 0);
     }
     if (timer.get() < 10.5 && timer.get() > 7) {
+      driveSubsystem.StopAtPosition(0.0, Units.inchesToMeters(10), .1, 0, 0);
+    }
+    if (timer.get() < 14 && timer.get() > 10.5) {
       driveSubsystem.StopAtAngle(180, 0.75, true);
     }
-    if (timer.get() > 11.5) {
+    if (timer.get() > 15) {
       driveSubsystem.drive(0, 0, 0, false);
     }
   }

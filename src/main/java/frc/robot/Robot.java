@@ -56,15 +56,16 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     // The gyro sensor  
-    DriveSubsystem.m_gyro.enableOptionalMessages(true,
-    false,
-    false,
-    false,
-    true, 
-  true,
-  false,
-  true,
-  false);
+    DriveSubsystem.m_gyro.enableOptionalMessages(
+      true,
+      false,
+      false,
+      false,
+      true, 
+      true,
+      false,
+      true,
+      false);
 
     // Setup LED Bars
     LEDBarBuffer = new AddressableLEDBuffer(15); // Number of LEDs we want to control
@@ -77,6 +78,8 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    //System.out.print("");
   }
 
   /**

@@ -219,16 +219,17 @@ public void StopAtAngle(int angle, double rot, boolean OverloadNewFunction) {
   }
 
   public void StopAtPosition(Double posX, double posY, double speed, double currentPosX, double currentPosY) {
-    double tempXSpeed;
-    //double tempYSpeed;
-    if (Math.round(getPose().getX()) <= posX + .1 && Math.round(getPose().getX()) >= posX - .1) {
+    double tempXSpeed = 0;
+    double tempYSpeed = 0;
+    if (getPose().getX() <= posX + .1 && getPose().getX() >= posX - .1) {
       tempXSpeed = 0.0;
     } else {
       tempXSpeed = speed;
       if (currentPosX > posX) {
         tempXSpeed *= -1.0;
       }
-    /* Uses TempYSpeed, even though we don't use it for the final drive function call.
+    }
+    // Uses TempYSpeed, even though we don't use it for the final drive function call.
 
     if (getPose().getY() <= posY + .1 && getPose().getY() >= posY - .1) {
       tempYSpeed = 0.0;
@@ -237,10 +238,9 @@ public void StopAtAngle(int angle, double rot, boolean OverloadNewFunction) {
       if (currentPosY > posY) {
         tempYSpeed *= -1.0;
       }
-      */
     }
     
-    drive(tempXSpeed, 0, 0, true);
+    drive(tempXSpeed, tempYSpeed, 0, true);
   }
 
 
