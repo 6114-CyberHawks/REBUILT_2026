@@ -27,7 +27,6 @@ import frc.robot.subsystems.DriveSubsystem;
  * project.
  */
 public class Robot extends TimedRobot {
-
   // LED variables and constants
   private AddressableLED FrontLEDBar;
   private AddressableLED BackLEDBar;
@@ -55,6 +54,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+
     // The gyro sensor  
     DriveSubsystem.m_gyro.enableOptionalMessages(
       true,
@@ -151,7 +151,6 @@ public class Robot extends TimedRobot {
     */
     
     System.out.printf("LeftY: %f; LeftX: %f; RightX: %f", m_driverController.getLeftY(), m_driverController.getLeftX(), m_driverController.getRightX());
-
     
     //System.out.println(m_gryo.getYaw());
   }
@@ -161,9 +160,8 @@ public class Robot extends TimedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 
-    scrollingRainbowLEDs.applyTo(LEDBarBuffer);
-    // update LED Bar depending on buffer
-    FrontLEDBar.setData(LEDBarBuffer);
+    //scrollingRainbowLEDs.applyTo(LEDBarBuffer);
+    //FrontLEDBar.setData(LEDBarBuffer);
   }
 
   /** This function is called periodically during test mode. */

@@ -183,12 +183,14 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearRight.resetEncoders();
   }
 
-  /** Zeroes the heading of the robot. */
-  public void zeroHeading() {
-    m_gyro.resetYaw();
+  /** Zeroes the heading of the robot. @return 0: OK, 1: Error */
+  public int zeroHeading() {
+    return m_gyro.resetYaw();
     //archived_m_gyro.reset();
   }
 
+
+/* Old StopAtAngle function, new one below.
 public void StopAtAngle(int angle, double rot) {
     double rotationSpeed;
     if (Math.round(getHeading()) <= angle + 5 && Math.round(getHeading()) >= angle - 5) {
@@ -204,8 +206,10 @@ public void StopAtAngle(int angle, double rot) {
     }
     drive(0, 0, rotationSpeed, true);
   }
+*/
 
-public void StopAtAngle(int angle, double rot, boolean OverloadNewFunction) {
+/** Stops at angle inputted into the angle params */
+public void StopAtAngle(int angle, double rot) {
 
   if (m_headingController.atSetpoint()) {
     drive(0,0,0, false);
@@ -218,9 +222,11 @@ public void StopAtAngle(int angle, double rot, boolean OverloadNewFunction) {
     drive(0, 0, rotationOutput, false);
   }
 
+  /** Don't put pos params at 0.0, use driveSubsystem.getPose() instead*/
   public void StopAtPosition(Double posX, double posY, double speed, double currentPosX, double currentPosY) {
     double tempXSpeed = 0;
     double tempYSpeed = 0;
+
     if (getPose().getX() <= posX + .1 && getPose().getX() >= posX - .1) {
       tempXSpeed = 0.0;
     } else {
@@ -229,8 +235,7 @@ public void StopAtAngle(int angle, double rot, boolean OverloadNewFunction) {
         tempXSpeed *= -1.0;
       }
     }
-    // Uses TempYSpeed, even though we don't use it for the final drive function call.
-
+    
     if (getPose().getY() <= posY + .1 && getPose().getY() >= posY - .1) {
       tempYSpeed = 0.0;
     } else {
@@ -239,7 +244,7 @@ public void StopAtAngle(int angle, double rot, boolean OverloadNewFunction) {
         tempYSpeed *= -1.0;
       }
     }
-    
+
     drive(tempXSpeed, tempYSpeed, 0, true);
   }
 

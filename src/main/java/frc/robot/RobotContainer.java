@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 //import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import static edu.wpi.first.units.Units.Degrees;
 //import java.util.List;
 
 //import com.studica.frc.Navx;
@@ -109,6 +110,13 @@ public class RobotContainer {
         .onTrue(new InstantCommand(
             () -> m_robotDrive.zeroHeading(),
             m_robotDrive));
+
+    new JoystickButton(m_driverController, XboxController.Button.kY.value)
+        .onTrue(new InstantCommand(() -> System.out.println("Before Reset: " + 
+          DriveSubsystem.m_gyro.getYaw().in(Degrees) + ", Yaw Reset(?); (0: Ok, 1: Err): " +
+          m_robotDrive.zeroHeading() + ", After Reset: " +
+          DriveSubsystem.m_gyro.getYaw().in(Degrees)), /*Checked the values & reset Yaw*/
+        m_robotDrive));
   }
 
   
