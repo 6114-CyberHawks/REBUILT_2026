@@ -6,9 +6,12 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DriveSubsystem;
+import edu.wpi.first.math.geometry.Pose2d;
 /*
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
@@ -44,8 +47,8 @@ public class Autonomous extends Command {
 
     // Prints out Robot positions and rotation, has been moved to Robot.java
     System.out.println("X axis(??) position of robot (estimated in inches): " +
-    Units.metersToInches(driveSubsystem.getPose().getX()) + ", Y axis(??) position of robot (estimated in inches): " +
-    Units.metersToInches(driveSubsystem.getPose().getY()) + ", Rotation of robot (estimated): " +
+    (driveSubsystem.getPose().getX()) + ", Y axis(??) position of robot (estimated in inches): " +
+    (driveSubsystem.getPose().getY()) + ", Rotation of robot (estimated): " +
     driveSubsystem.getPose().getRotation().getDegrees() + ", Raw Rotation: " +
     DriveSubsystem.m_gyro.getYaw().in(Degrees) + ", Rotation: " +
     Math.round(DriveSubsystem.m_gyro.getYaw().in(Degrees))
@@ -53,15 +56,17 @@ public class Autonomous extends Command {
     
     if (timer.get() < 3.5 && timer.get() > 0) {
       //driveSubsystem.StopAtAngle(0, 0.25);
+      driveSubsystem.resetOdometry(Pose2d.kZero);
     }
     if (timer.get() < 7 && timer.get() > 3.5) {
-      driveSubsystem.StopAtPosition(-Units.inchesToMeters(20), driveSubsystem.getPose().getY(), .075, 0, 0);
+      driveSubsystem.StopAtPosition(driveSubsystem.getPose().getX(), Units.inchesToMeters(35), .1, 0, 0);
     }
-    if (timer.get() < 10.5 && timer.get() > 7) {
-      driveSubsystem.StopAtPosition(driveSubsystem.getPose().getX(), -Units.inchesToMeters(20), .075, 0, 0);
+      if (timer.get() < 10.5 && timer.get() > 7) {
+      driveSubsystem.StopAtPosition(-Units.inchesToMeters(71), driveSubsystem.getPose().getY(), .1, 0, 0); // if you go over 70 it doesn't stop? Also trying last years code and it doesn't work how it is suppose to.
     }
     if (timer.get() < 14 && timer.get() > 10.5) {
-      driveSubsystem.StopAtAngle(180, 0.75);
+      //driveSubsystem.StopAtAngle(180, 0.75); // doesn't work? the gyro is having problems.
+
     }
     if (timer.get() > 20) {
       driveSubsystem.drive(0, 0, 0, false);

@@ -222,10 +222,10 @@ public void StopAtAngle(int angle, double rot) {
     drive(0, 0, rotationOutput, false);
   }
 
-  /** Don't put pos params at 0.0, use driveSubsystem.getPose() instead*/
+  /* Don't put pos params at 0.0, use driveSubsystem.getPose() instead*/
   public void StopAtPosition(Double posX, double posY, double speed, double currentPosX, double currentPosY) {
-    double tempXSpeed = 0;
-    double tempYSpeed = 0;
+    double tempXSpeed;
+    double tempYSpeed;
 
     if (getPose().getX() <= posX + .1 && getPose().getX() >= posX - .1) {
       tempXSpeed = 0.0;
@@ -248,6 +248,9 @@ public void StopAtAngle(int angle, double rot) {
     drive(tempXSpeed, tempYSpeed, 0, true);
   }
 
+  public void StopAtIncrement(Double posX, double posY, double speed) {
+
+  }
 
   /**
    * Returns the heading of the robot.
