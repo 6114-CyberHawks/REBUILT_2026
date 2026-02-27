@@ -59,13 +59,13 @@ public class Autonomous extends Command {
       driveSubsystem.resetOdometry(Pose2d.kZero);
     }
     if (timer.get() < 7 && timer.get() > 3.5) {
-      driveSubsystem.StopAtPosition(driveSubsystem.getPose().getX(), Units.inchesToMeters(35), .1, 0, 0);
+      driveSubsystem.StopAtPosition(driveSubsystem.getPose().getX(), Units.inchesToMeters(40), .1, 0, 0);
     }
-      if (timer.get() < 10.5 && timer.get() > 7) {
-      driveSubsystem.StopAtPosition(-Units.inchesToMeters(71), driveSubsystem.getPose().getY(), .1, 0, 0); // if you go over 70 it doesn't stop? Also trying last years code and it doesn't work how it is suppose to.
+      if (timer.get() < 16 && timer.get() > 7) {
+      driveSubsystem.StopAtPosition(-Units.inchesToMeters(98), driveSubsystem.getPose().getY(), .1, 0, 0);
     }
-    if (timer.get() < 14 && timer.get() > 10.5) {
-      //driveSubsystem.StopAtAngle(180, 0.75); // doesn't work? the gyro is having problems.
+    if (timer.get() < 20 && timer.get() > 17) {
+      driveSubsystem.StopAtPosition(driveSubsystem.getPose().getX(), -Units.inchesToMeters(0.01), .05, 0, 0);
 
     }
     if (timer.get() > 20) {
