@@ -6,18 +6,11 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DriveSubsystem;
-import edu.wpi.first.math.geometry.Pose2d;
-/*
-import edu.wpi.first.wpilibj.ADIS16470_IMU;
-import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
-import edu.wpi.first.math.MathUtil;
-*/
-import edu.wpi.first.math.util.Units;
 
 public class Autonomous extends Command {
   private final DriveSubsystem driveSubsystem;
@@ -44,8 +37,9 @@ public class Autonomous extends Command {
   @Override
   public void execute() {
     // Default Auton
-
-    // Prints out Robot positions and rotation, has been moved to Robot.java
+    int angle;
+    double rot;
+    // Prints out Robot positions and rotation
     System.out.println("X axis(??) position of robot (estimated in inches): " +
     (driveSubsystem.getPose().getX()) + ", Y axis(??) position of robot (estimated in inches): " +
     (driveSubsystem.getPose().getY()) + ", Rotation of robot (estimated): " +
@@ -54,21 +48,51 @@ public class Autonomous extends Command {
     Math.round(DriveSubsystem.m_gyro.getYaw().in(Degrees))
     );
     
-    if (timer.get() < 3.5 && timer.get() > 0) {
+    if (timer.get() < 1 && timer.get() > 0) {
       //driveSubsystem.StopAtAngle(0, 0.25);
       driveSubsystem.resetOdometry(Pose2d.kZero);
+    }/*
+    if (timer.get() < 4 && timer.get() > 1) {
+      //driveSubsystem.StopAtPosition(0.0, Units.inchesToMeters(40), .1);
     }
-    if (timer.get() < 7 && timer.get() > 3.5) {
-      driveSubsystem.StopAtPosition(driveSubsystem.getPose().getX(), Units.inchesToMeters(40), .1, 0, 0);
-    }
-      if (timer.get() < 16 && timer.get() > 7) {
-      driveSubsystem.StopAtPosition(-Units.inchesToMeters(98), driveSubsystem.getPose().getY(), .1, 0, 0);
-    }
-    if (timer.get() < 20 && timer.get() > 17) {
-      driveSubsystem.StopAtPosition(driveSubsystem.getPose().getX(), -Units.inchesToMeters(0.01), .05, 0, 0);
+    if (timer.get() < 10 && timer.get() > 4) {
+      //driveSubsystem.StopAtPosition(-Units.inchesToMeters(40), 0.0, .1);
+    }*/
+    if (timer.get() < 10 /*15*/ && timer.get() > 1 /*10*/) {
+      System.out.println("Rotating to -30");
+      // Maybe?
+      Thread thread = new Thread(() -> {
+        driveSubsystem.StopAtAngle(-30, 0.075);
+      });
+      thread.start();
 
+      angle = -30;
+      rot = 0.075;
+
+      //driveSubsystem.StopAtAngle(angle, rot);
     }
-    if (timer.get() > 20) {
+    if (timer.get() < 20 /*20*/ && timer.get() > 10 /*15*/) {
+      System.out.println("Reseting rotation to 0");
+      // Maybe?
+      Thread thread = new Thread(() -> {
+        driveSubsystem.StopAtAngle(0, 0.075);
+      });
+      thread.start();
+
+      angle = 0;
+      rot = 0.075;
+
+      //driveSubsystem.StopAtAngle(angle, rot);
+
+      //driveSubsystem.StopAtAngle(-60, 0.5); // The robot doesn't go back to 0...?
+    }/*
+    if (timer.get() < 26 && timer.get() > 20) {
+      //driveSubsystem.StopAtPosition(-Units.inchesToMeters(53), 0.0, .1);
+    }
+    if (timer.get() < 28.5 && timer.get() > 26) {
+      //driveSubsystem.StopAtPosition(0.0, -Units.inchesToMeters(0.01), .05);
+    }*/
+    if (timer.get() > 15) {
       driveSubsystem.drive(0, 0, 0, false);
     }
   }

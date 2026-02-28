@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.networktables.BooleanArrayEntry;
+import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.AddressableLED;
@@ -17,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.Testing;
 
 //import edu.wpi.first.wpilibj.XboxController;
 
@@ -27,14 +31,16 @@ import frc.robot.subsystems.DriveSubsystem;
  * project.
  */
 public class Robot extends TimedRobot {
+  public BooleanPublisher IRSensor;
+
   // LED variables and constants
   private AddressableLED FrontLEDBar;
-  private AddressableLED BackLEDBar;
+  //private AddressableLED BackLEDBar;
   private AddressableLEDBuffer LEDBarBuffer;
   private final LEDPattern offLEDs = LEDPattern.kOff;
-  private final LEDPattern greenLEDs = LEDPattern.solid(Color.kGreen);
-  private final LEDPattern purpleLEDs = LEDPattern.solid(Color.kMidnightBlue);
-  private final LEDPattern redLEDs = LEDPattern.solid(Color.kRed);
+  //private final LEDPattern greenLEDs = LEDPattern.solid(Color.kGreen);
+  //private final LEDPattern purpleLEDs = LEDPattern.solid(Color.kMidnightBlue);
+  //private final LEDPattern redLEDs = LEDPattern.solid(Color.kRed);
   private final LEDPattern rainbowLEDs = LEDPattern.rainbow(255, 128);
   private final LEDPattern orangeLEDs = LEDPattern.solid(Color.kOrange);
   // Our LED strip has a density of 12 LEDs per meter
@@ -55,6 +61,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
 
+    IRSensor = NetworkTableInstance.getDefault().getTable("datatable").getBooleanTopic("IR Sensor").publish();
+    
     // The gyro sensor  
     DriveSubsystem.m_gyro.enableOptionalMessages(
       true,
@@ -136,6 +144,9 @@ public class Robot extends TimedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
+    orangeLEDs.applyTo(LEDBarBuffer);
+    FrontLEDBar.setData(LEDBarBuffer);
+
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
@@ -160,11 +171,17 @@ public class Robot extends TimedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 
-    //scrollingRainbowLEDs.applyTo(LEDBarBuffer);
+    System.out.println("IR Sensor: " + new Testing().getIRSenor());
+
+    scrollingRainbowLEDs.applyTo(LEDBarBuffer);
     //FrontLEDBar.setData(LEDBarBuffer);
   }
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    boolean Sensor = new Testing().getIRSenor();
+    IRSensor.set(Sensor);
+    System.out.println("Sensor(?): " + Sensor);
+  }
 }

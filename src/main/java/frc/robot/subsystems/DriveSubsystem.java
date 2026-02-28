@@ -78,7 +78,7 @@ public class DriveSubsystem extends SubsystemBase {
   public DriveSubsystem() {
     // Usage reporting for MAXSwerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
-    
+
     m_headingController.setTolerance(1.0,2.0);
 
     m_headingController.enableContinuousInput(-180, 180);
@@ -191,8 +191,8 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
 
-/* Old StopAtAngle function, new one below.
-public void StopAtAngle(int angle, double rot) {
+/** Old StopAtAngle function, new one below. use this function without the overload boolean. */
+public void StopAtAngle(int angle, double rot, boolean overloadOld) {
     double rotationSpeed;
     if (Math.round(getHeading()) <= angle + 5 && Math.round(getHeading()) >= angle - 5) {
       rotationSpeed = 0;
@@ -207,23 +207,37 @@ public void StopAtAngle(int angle, double rot) {
     }
     drive(0, 0, rotationSpeed, true);
   }
-*/
+
 
 /** Stops at angle inputted into the angle params */
 public void StopAtAngle(int angle, double rot) {
-
   if (m_headingController.atSetpoint()) {
+    System.out.println("At Setpoint");
     drive(0,0,0, false);
     return;
   }
-    double rotationOutput = m_headingController.calculate(getHeading(), angle);
 
-    rotationOutput = MathUtil.clamp(rotationOutput, -rot, rot);
+  System.out.println("Calculating Rotation...");
+  double rotationOutput = m_headingController.calculate(getHeading(), angle);
+  rotationOutput = MathUtil.clamp(rotationOutput, -rot, rot);
 
-    drive(0, 0, rotationOutput, false);
+  System.out.println("Running rotation...");
+  drive(0, 0, rotationOutput, false);
   }
 
-  /* Don't put pos params at 0.0, use driveSubsystem.getPose() instead*/
+  /** Stops At two angles consecutivly */
+  public void StopAtAngle(int angle1, double rot1, int angle2, double rot2, int Seconds) {
+    StopAtAngle(angle1, rot1);
+
+    try {
+      wait(Seconds*1000);
+    } catch (Exception e) {
+      System.out.println("Thread paused...");
+    }
+
+    StopAtAngle(angle2, rot2);
+  }
+
   public void StopAtPosition(Double posX, double posY, double speed, double currentPosX, double currentPosY) {
     double tempXSpeed;
     double tempYSpeed;
@@ -249,8 +263,19 @@ public void StopAtAngle(int angle, double rot) {
     drive(tempXSpeed, tempYSpeed, 0, true);
   }
 
-  public void StopAtIncrement(Double posX, double posY, double speed) {
-
+  /** The only difference is that 0 for posX & posY is replaced with getPose. */
+  public void StopAtPosition(Double posX, double posY, double speed) {
+    if (posX == 0.0 && posY != 0.0) {
+      StopAtPosition(getPose().getX(), getPose().getX(), speed, 0, 0);
+    } else if (posX == 0.0 && posY != 0.0) {
+      StopAtPosition(getPose().getX(), posY, speed, 0, 0);
+    } else if (posX != 0.0 && posY == 0.0) {
+      StopAtPosition(posX, getPose().getY(), speed, 0, 0);
+    } else if (posX != 0.0 && posY != 0.0) {
+      StopAtPosition(posX, posY, speed, 0, 0);
+    } else {
+      System.out.print("Error Occured. Position not ran");
+    }
   }
 
   /**
