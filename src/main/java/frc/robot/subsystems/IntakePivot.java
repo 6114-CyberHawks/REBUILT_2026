@@ -1,3 +1,5 @@
+//Uses Minion motor, Nova controller, PID and AdvantageScope to tune and log (hopefully)
+
 package frc.robot.subsystems;
 
 import com.thethriftybot.ThriftyNova;
@@ -287,3 +289,4 @@ public class IntakePivot extends SubsystemBase {
         return m_targetPosition - getPosition();
     }
 }
+
