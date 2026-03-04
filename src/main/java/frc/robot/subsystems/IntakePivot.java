@@ -1,82 +1,57 @@
-//Uses Minion motor, Nova controller, PID and AdvantageScope to tune and log (hopefully)
+//Minion motors with Nova controllers.  No PID or AdvatageScope
+
 package frc.robot.subsystems;
 
 import com.thethriftybot.devices.ThriftyNova;
 import com.thethriftybot.devices.ThriftyNova.CurrentType;
 import com.thethriftybot.devices.ThriftyNova.MotorType;
-import com.thethriftybot.devices.ThriftyNova.PIDSlot;
+import com.thethriftybot.devices.ThriftyNova.CurrentType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.RobotBase;
-
-// Simulation imports
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class IntakePivot extends SubsystemBase {
     private final ThriftyNova m_leaderMotor;
     private final ThriftyNova m_followerMotor;
     
-    // Position constants (in rotations of OUTPUT shaft)
-    private static final double STOWED_POSITION = 0.0;      // Up position
-    private static final double DEPLOYED_POSITION = 0.25;   // Down position (90 degrees)
-    
-    // Soft limits (in motor rotations - before gear ratio)
-    private static final double FORWARD_SOFT_LIMIT = 0.26 * 23.0;   // ~93 degrees * gear ratio
-    private static final double REVERSE_SOFT_LIMIT = -0.01 * 23.0;  // Slightly before zero * gear ratio
-    
-    // PID Constants (tunable via dashboard)
-    private double m_kP = 2.0;    // Proportional gain
-    private double m_kI = 0.0;    // Integral gain
-    private double m_kD = 0.1;    // Derivative gain
-    
-    // Gear ratio: 23:1
+    // Soft limits (in motor rotations - internal encoder counts)
+    // Gear ratio: 23:1 (23 motor rotations = 1 output rotation)
     private static final double GEAR_RATIO = 23.0;
     
-    // Position tolerance (in output rotations)
-    private static final double POSITION_TOLERANCE = 0.02;  // ~7 degrees
+    // Output positions (what we think in terms of)
+    private static final double STOWED_OUTPUT_POSITION = 0.0;      // 0 degrees (up)
+    private static final double DEPLOYED_OUTPUT_POSITION = 0.25;   // 90 degrees (down)
     
-    // Current target position (in output rotations)
-    private double m_targetPosition = STOWED_POSITION;
+    // Motor limits (multiply by gear ratio for motor encoder counts)
+    private static final double REVERSE_SOFT_LIMIT = -0.01 * GEAR_RATIO;  // Slightly before zero
+    private static final double FORWARD_SOFT_LIMIT = 0.26 * GEAR_RATIO;   // ~93 degrees (slightly past 90)
     
-    // Simulation objects
-    private SingleJointedArmSim m_armSim;
-    private Mechanism2d m_mech2d;
-    private MechanismLigament2d m_armVisual;
-    private double m_simPosition = 0.0;
+    // Simple speed constants
+    private static final double DEPLOY_SPEED = 0.3;   // 30% power down
+    private static final double STOW_SPEED = -0.3;    // 30% power up
+    private static final double STOP_SPEED = 0.0;     // Stop
     
     public IntakePivot(int leaderCANId, int followerCANId) {
+<<<<<<< HEAD
         // Use MotorType.Minion for CTR Electronics Minion motors
         m_leaderMotor = new ThriftyNova(leaderCANId, MotorType.MINION);
         m_followerMotor = new ThriftyNova(followerCANId, MotorType.MINION);
+=======
+        m_leaderMotor = new ThriftyNova(leaderCANId, MotorType.Minion);
+        m_followerMotor = new ThriftyNova(followerCANId, MotorType.Minion);
+>>>>>>> 67e242184610e8bf59c90c3c84758f2968a0d4c0
         
         configureMotors();
-        
-        // Initialize tunable PID values on dashboard
-        SmartDashboard.putNumber("IntakePivot/Tuning/kP", m_kP);
-        SmartDashboard.putNumber("IntakePivot/Tuning/kI", m_kI);
-        SmartDashboard.putNumber("IntakePivot/Tuning/kD", m_kD);
-        
-        if (RobotBase.isSimulation()) {
-            setupSimulation();
-        }
     }
     
     private void configureMotors() {
-        // Factory reset to clear any previous settings
+        // Factory reset
         m_leaderMotor.factoryReset();
         m_followerMotor.factoryReset();
         
-        // Configure leader motor
-        m_leaderMotor.setInverted(false);  // Adjust based on testing
-        m_leaderMotor.setBrakeMode(true);  // true = brake mode, false = coast mode
+        // Basic configuration
+        m_leaderMotor.setInverted(false);  // Adjust if needed
+        m_leaderMotor.setBrakeMode(true);   // Brake mode for safety
         
+<<<<<<< HEAD
         // Configure PID (works with motor rotations, not output rotations)
         m_leaderMotor.pid0.setP(m_kP);
         m_leaderMotor.pid0.setI(m_kI);
@@ -88,8 +63,13 @@ public class IntakePivot extends SubsystemBase {
         
         // Configure soft limits (in motor rotations)
         m_leaderMotor.enableSoftLimits(true);
+=======
+        // Configure soft limits (IMPORTANT: These protect your mechanism!)
+>>>>>>> 67e242184610e8bf59c90c3c84758f2968a0d4c0
         m_leaderMotor.setSoftLimits(REVERSE_SOFT_LIMIT, FORWARD_SOFT_LIMIT);
+        m_leaderMotor.enableSoftLimits(true);
         
+<<<<<<< HEAD
         // Set current limit (Minion motors can handle ~40A)
         m_leaderMotor.setMaxCurrent(CurrentType.STATOR,40.0);
         
@@ -230,10 +210,31 @@ public class IntakePivot extends SubsystemBase {
             m_armSim.getCurrentDrawAmps());
         SmartDashboard.putNumber("IntakePivot/Sim/Velocity (rad/s)", 
             m_armSim.getVelocityRadPerSec());
+=======
+        // Set current limit to protect motors
+        m_leaderMotor.setMaxCurrent(CurrentType.STATOR, 40.0);
+        
+        // Configure follower
+        m_followerMotor.follow(m_leaderMotor.getID());
+        m_followerMotor.setBrakeMode(true);
+        m_followerMotor.setMaxCurrent(CurrentType.STATOR, 40.0);
+        
+        // Zero encoder at startup - CRITICAL: Arm MUST be in stowed (up) position!
+        m_leaderMotor.setEncoderPosition(0.0);
+        
+        System.out.println("IntakePivot configured:");
+        System.out.println("  Soft limits: " + REVERSE_SOFT_LIMIT + " to " + FORWARD_SOFT_LIMIT + " motor rotations");
+        System.out.println("  Output range: " + STOWED_OUTPUT_POSITION + " to " + DEPLOYED_OUTPUT_POSITION + " output rotations");
+        System.out.println("  Gear ratio: " + GEAR_RATIO + ":1");
+        
+        // Start stopped
+        stop();
+>>>>>>> 67e242184610e8bf59c90c3c84758f2968a0d4c0
     }
     
     // ===== COMMAND METHODS =====
     
+<<<<<<< HEAD
     public void deployIntake() {
         m_targetPosition = DEPLOYED_POSITION;
         m_leaderMotor.setPosition(DEPLOYED_POSITION * GEAR_RATIO);
@@ -246,48 +247,104 @@ public class IntakePivot extends SubsystemBase {
         m_leaderMotor.setPosition(STOWED_POSITION * GEAR_RATIO);
         System.out.println("STOW commanded - target: " + m_targetPosition + " rotations (" 
             + (m_targetPosition * 360.0) + " degrees)");
+=======
+    /**
+     * Deploy the intake (move down)
+     * Soft limits will automatically stop at FORWARD_SOFT_LIMIT
+     */
+    public void deploy() {
+        m_leaderMotor.setPercent(DEPLOY_SPEED);
+        System.out.println("DEPLOY - Running at " + (DEPLOY_SPEED * 100) + "% power (soft limit will stop at " + FORWARD_SOFT_LIMIT + ")");
     }
     
+    /**
+     * Stow the intake (move up)
+     * Soft limits will automatically stop at REVERSE_SOFT_LIMIT
+     */
+    public void stow() {
+        m_leaderMotor.setPercent(STOW_SPEED);
+        System.out.println("STOW - Running at " + (STOW_SPEED * 100) + "% power (soft limit will stop at " + REVERSE_SOFT_LIMIT + ")");
+>>>>>>> 67e242184610e8bf59c90c3c84758f2968a0d4c0
+    }
+    
+    /**
+     * Stop all motion
+     */
     public void stop() {
+<<<<<<< HEAD
         // Hold current position with PID
         m_targetPosition = getPosition();
         m_leaderMotor.setPosition(m_targetPosition * GEAR_RATIO);
         System.out.println("STOP - holding position: " + m_targetPosition + " rotations (" 
             + (m_targetPosition * 360.0) + " degrees)");
+=======
+        m_leaderMotor.setPercent(STOP_SPEED);
+        System.out.println("STOP - Motors stopped at position: " + m_leaderMotor.getPosition() + " motor rotations");
+>>>>>>> 67e242184610e8bf59c90c3c84758f2968a0d4c0
     }
     
-    // ===== QUERY METHODS =====
-    
-    public boolean atTarget() {
-        return Math.abs(m_targetPosition - getPosition()) < POSITION_TOLERANCE;
+    /**
+     * Manual control - set power directly
+     * Soft limits still apply!
+     * @param speed Speed from -1.0 (full reverse) to 1.0 (full forward)
+     */
+    public void setSpeed(double speed) {
+        m_leaderMotor.setPercent(speed);
     }
     
+<<<<<<< HEAD
     public double getPosition() {
         if (RobotBase.isSimulation()) {
             return m_simPosition;
         }
         // Convert motor rotations to output rotations
         return m_leaderMotor.getPosition() / GEAR_RATIO;
+=======
+    /**
+     * Get current position in motor rotations
+     */
+    public double getPositionMotorRotations() {
+        return m_leaderMotor.getPosition();
+>>>>>>> 67e242184610e8bf59c90c3c84758f2968a0d4c0
     }
     
+    /**
+     * Get current position in output rotations (divide by gear ratio)
+     */
+    public double getPositionOutputRotations() {
+        return m_leaderMotor.getPosition() / GEAR_RATIO;
+    }
+    
+    /**
+     * Get current position in degrees
+     */
     public double getPositionDegrees() {
-        return getPosition() * 360.0;
+        return getPositionOutputRotations() * 360.0;
     }
     
+<<<<<<< HEAD
     public double getVelocity() {
         // Convert motor velocity to output velocity
         return m_leaderMotor.getVelocity() / GEAR_RATIO;
+=======
+    /**
+     * Check if at forward soft limit
+     */
+    public boolean atForwardLimit() {
+        return m_leaderMotor.getPosition() >= (FORWARD_SOFT_LIMIT - 0.1);
+>>>>>>> 67e242184610e8bf59c90c3c84758f2968a0d4c0
     }
     
-    public double getVelocityDegreesPerSecond() {
-        return getVelocity() * 360.0;
+    /**
+     * Check if at reverse soft limit
+     */
+    public boolean atReverseLimit() {
+        return m_leaderMotor.getPosition() <= (REVERSE_SOFT_LIMIT + 0.1);
     }
     
-    public double getTargetPosition() {
-        return m_targetPosition;
-    }
-    
-    public double getPositionError() {
-        return m_targetPosition - getPosition();
+    @Override
+    public void periodic() {
+        // Optional: Print position for debugging (can comment out after testing)
+        // System.out.println("Position: " + getPositionDegrees() + " degrees");
     }
 }

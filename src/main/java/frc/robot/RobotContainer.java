@@ -6,8 +6,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.IntakePivot;
 
 public class RobotContainer {
-    // Subsystem
-    private final IntakePivot m_intakePivot = new IntakePivot(10, 11);  // Update CAN IDs
+    // Subsystem - UPDATE THESE CAN IDs TO MATCH YOUR ROBOT
+    private final IntakePivot m_intakePivot = new IntakePivot(10, 11);
     
     // Xbox controller
     private final CommandXboxController m_controller = new CommandXboxController(0);
@@ -17,26 +17,31 @@ public class RobotContainer {
     }
     
     private void configureBindings() {
-        // A button - Deploy intake (PID controlled)
+        // A button - Deploy intake (hold to move down)
         m_controller.a()
-            .onTrue(Commands.runOnce(() -> m_intakePivot.deployIntake(), m_intakePivot));
+            .whileTrue(Commands.run(() -> m_intakePivot.deploy(), m_intakePivot))
+            .onFalse(Commands.runOnce(() -> m_intakePivot.stop(), m_intakePivot));
         
-        // Y button - Stow intake (PID controlled)
+        // Y button - Stow intake (hold to move up)
         m_controller.y()
-            .onTrue(Commands.runOnce(() -> m_intakePivot.stowIntake(), m_intakePivot));
+            .whileTrue(Commands.run(() -> m_intakePivot.stow(), m_intakePivot))
+            .onFalse(Commands.runOnce(() -> m_intakePivot.stop(), m_intakePivot));
+        
+        // B button - Emergency stop
+        m_controller.b()
+            .onTrue(Commands.runOnce(() -> m_intakePivot.stop(), m_intakePivot));
     }
     
-    /**
-     * Use this to pass the autonomous command to the main {@link Robot} class.
-     *
-     * @return the command to run in autonomous
-     */
     public Command getAutonomousCommand() {
-        // Example autonomous command: deploy intake, wait 2 seconds, stow intake
+        // Simple autonomous: deploy for 2 seconds, then stow for 2 seconds
         return Commands.sequence(
-            Commands.runOnce(() -> m_intakePivot.deployIntake(), m_intakePivot),
+            Commands.runOnce(() -> m_intakePivot.deploy(), m_intakePivot),
             Commands.waitSeconds(2.0),
-            Commands.runOnce(() -> m_intakePivot.stowIntake(), m_intakePivot)
+            Commands.runOnce(() -> m_intakePivot.stop(), m_intakePivot),
+            Commands.waitSeconds(0.5),
+            Commands.runOnce(() -> m_intakePivot.stow(), m_intakePivot),
+            Commands.waitSeconds(2.0),
+            Commands.runOnce(() -> m_intakePivot.stop(), m_intakePivot)
         );
     }
 }
