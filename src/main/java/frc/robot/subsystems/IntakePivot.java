@@ -2,6 +2,7 @@
 package frc.robot.subsystems;
 
 import com.thethriftybot.devices.ThriftyNova;
+import com.thethriftybot.devices.ThriftyNova.CurrentType;
 import com.thethriftybot.devices.ThriftyNova.MotorType;
 import com.thethriftybot.devices.ThriftyNova.PIDSlot;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -52,8 +53,8 @@ public class IntakePivot extends SubsystemBase {
     
     public IntakePivot(int leaderCANId, int followerCANId) {
         // Use MotorType.Minion for CTR Electronics Minion motors
-        m_leaderMotor = new ThriftyNova(leaderCANId, MotorType.Minion);
-        m_followerMotor = new ThriftyNova(followerCANId, MotorType.Minion);
+        m_leaderMotor = new ThriftyNova(leaderCANId, MotorType.MINION);
+        m_followerMotor = new ThriftyNova(followerCANId, MotorType.MINION);
         
         configureMotors();
         
@@ -77,29 +78,32 @@ public class IntakePivot extends SubsystemBase {
         m_leaderMotor.setBrakeMode(true);  // true = brake mode, false = coast mode
         
         // Configure PID (works with motor rotations, not output rotations)
-        m_leaderMotor.setPID(PIDSlot.Slot0, m_kP, m_kI, m_kD);
+        m_leaderMotor.pid0.setP(m_kP);
+        m_leaderMotor.pid0.setI(m_kI);
+        m_leaderMotor.pid0.setD(m_kD);
+       
         
         // Set output limits
-        m_leaderMotor.setOutputRange(PIDSlot.Slot0, -0.5, 0.5);
+        m_leaderMotor.setMaxOutput(-0.5, 0.5);
         
         // Configure soft limits (in motor rotations)
         m_leaderMotor.enableSoftLimits(true);
         m_leaderMotor.setSoftLimits(REVERSE_SOFT_LIMIT, FORWARD_SOFT_LIMIT);
         
         // Set current limit (Minion motors can handle ~40A)
-        m_leaderMotor.setCurrentLimit(40);
+        m_leaderMotor.setMaxCurrent(CurrentType.STATOR,40.0);
         
         // Configure follower motor
-        m_followerMotor.follow(m_leaderMotor, false);  // false = same direction
+        m_followerMotor.follow(m_leaderMotor.getID());
         m_followerMotor.setBrakeMode(true);  // Brake mode
-        m_followerMotor.setCurrentLimit(40);
-        
+        m_followerMotor.setMaxCurrent(CurrentType.STATOR,40.0);
+        // If follower needs to spin in opposite direction, invert it
+        m_followerMotor.setInverted(true);
+
         // Zero encoder at startup - IMPORTANT: Arm must be stowed (up)!
         m_leaderMotor.setEncoderPosition(0.0);
         
-        // Burn settings to flash
-        m_leaderMotor.burnFlash();
-        m_followerMotor.burnFlash();
+
     }
     
     private void setupSimulation() {
@@ -156,19 +160,19 @@ public class IntakePivot extends SubsystemBase {
         
         // ===== MOTOR HEALTH DATA =====
         SmartDashboard.putNumber("IntakePivot/Leader Current (A)", 
-            m_leaderMotor.getOutputCurrent());
+            m_leaderMotor.getMaxCurrent());
         SmartDashboard.putNumber("IntakePivot/Follower Current (A)", 
-            m_followerMotor.getOutputCurrent());
+            m_followerMotor.getMaxCurrent());
         SmartDashboard.putNumber("IntakePivot/Total Current (A)", 
-            m_leaderMotor.getOutputCurrent() + m_followerMotor.getOutputCurrent());
+            m_leaderMotor.getMaxCurrent() + m_followerMotor.getMaxCurrent());
         SmartDashboard.putNumber("IntakePivot/Applied Output", 
-            m_leaderMotor.getAppliedOutput());
+            m_leaderMotor.get());
         SmartDashboard.putNumber("IntakePivot/Bus Voltage", 
-            m_leaderMotor.getBusVoltage());
+            m_leaderMotor.getVoltage());
         SmartDashboard.putNumber("IntakePivot/Leader Temperature (C)", 
-            m_leaderMotor.getMotorTemperature());
+            m_leaderMotor.getTemperature());
         SmartDashboard.putNumber("IntakePivot/Follower Temperature (C)", 
-            m_followerMotor.getMotorTemperature());
+            m_followerMotor.getTemperature());
         
         // ===== PID TUNING DATA =====
         SmartDashboard.putNumber("IntakePivot/PID/Current kP", m_kP);
@@ -184,7 +188,9 @@ public class IntakePivot extends SubsystemBase {
             m_kP = newKP;
             m_kI = newKI;
             m_kD = newKD;
-            m_leaderMotor.setPID(PIDSlot.Slot0, m_kP, m_kI, m_kD);
+            m_leaderMotor.pid0.setP(m_kP);
+            m_leaderMotor.pid0.setI(m_kI);
+            m_leaderMotor.pid0.setD(m_kD);
             System.out.println("PID UPDATED: kP=" + m_kP + " kI=" + m_kI + " kD=" + m_kD);
         }
         
@@ -199,15 +205,15 @@ public class IntakePivot extends SubsystemBase {
         
         // ===== DIAGNOSTIC DATA =====
         SmartDashboard.putBoolean("IntakePivot/Diagnostics/Leader Fault", 
-            m_leaderMotor.getFaults() != 0);
+            m_leaderMotor.getErrors().isEmpty());
         SmartDashboard.putBoolean("IntakePivot/Diagnostics/Follower Fault", 
-            m_followerMotor.getFaults() != 0);
+            m_followerMotor.getErrors().isEmpty());
     }
     
     @Override
     public void simulationPeriodic() {
         // Simple simulation without Thrifty-specific sim support
-        double voltage = m_leaderMotor.getAppliedOutput() * 12.0;
+        double voltage = m_leaderMotor.get() * 12.0;
         
         m_armSim.setInputVoltage(voltage);
         m_armSim.update(0.02);
@@ -230,16 +236,14 @@ public class IntakePivot extends SubsystemBase {
     
     public void deployIntake() {
         m_targetPosition = DEPLOYED_POSITION;
-        m_leaderMotor.setReference(DEPLOYED_POSITION * GEAR_RATIO, 
-            ThriftyNova.ControlType.Position, PIDSlot.Slot0);
+        m_leaderMotor.setPosition(DEPLOYED_POSITION * GEAR_RATIO);
         System.out.println("DEPLOY commanded - target: " + m_targetPosition + " rotations (" 
             + (m_targetPosition * 360.0) + " degrees)");
     }
     
     public void stowIntake() {
         m_targetPosition = STOWED_POSITION;
-        m_leaderMotor.setReference(STOWED_POSITION * GEAR_RATIO, 
-            ThriftyNova.ControlType.Position, PIDSlot.Slot0);
+        m_leaderMotor.setPosition(STOWED_POSITION * GEAR_RATIO);
         System.out.println("STOW commanded - target: " + m_targetPosition + " rotations (" 
             + (m_targetPosition * 360.0) + " degrees)");
     }
@@ -247,8 +251,7 @@ public class IntakePivot extends SubsystemBase {
     public void stop() {
         // Hold current position with PID
         m_targetPosition = getPosition();
-        m_leaderMotor.setReference(m_targetPosition * GEAR_RATIO, 
-            ThriftyNova.ControlType.Position, PIDSlot.Slot0);
+        m_leaderMotor.setPosition(m_targetPosition * GEAR_RATIO);
         System.out.println("STOP - holding position: " + m_targetPosition + " rotations (" 
             + (m_targetPosition * 360.0) + " degrees)");
     }
@@ -264,7 +267,7 @@ public class IntakePivot extends SubsystemBase {
             return m_simPosition;
         }
         // Convert motor rotations to output rotations
-        return m_leaderMotor.getEncoderPosition() / GEAR_RATIO;
+        return m_leaderMotor.getPosition() / GEAR_RATIO;
     }
     
     public double getPositionDegrees() {
@@ -273,7 +276,7 @@ public class IntakePivot extends SubsystemBase {
     
     public double getVelocity() {
         // Convert motor velocity to output velocity
-        return m_leaderMotor.getEncoderVelocity() / GEAR_RATIO;
+        return m_leaderMotor.getVelocity() / GEAR_RATIO;
     }
     
     public double getVelocityDegreesPerSecond() {
