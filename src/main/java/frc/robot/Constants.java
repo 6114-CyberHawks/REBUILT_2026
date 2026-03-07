@@ -36,6 +36,7 @@ public final class Constants {
 
     public static final int HoodBottomLimit = 0;
     public static final int ClimbBeamBreakLimit = 0;
+    public static final int ClimbLimitSwitch = 0;
 
   }
 

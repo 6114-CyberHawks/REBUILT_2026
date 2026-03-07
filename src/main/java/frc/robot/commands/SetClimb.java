@@ -43,10 +43,11 @@ public class SetClimb extends Command {
   @Override
   public void execute() {
     currentPosition = climbSubsystem.GetEncoderPosition();
+    System.out.println("position " + currentPosition);
     if(currentPosition < (desiredPosition - positionTolerance)) {
       climbSubsystem.SetSpeed(TopSpeed);
       System.out.println("Lower than point called for");
-    } else if (currentPosition > (desiredPosition- positionTolerance)) {
+    } else if (currentPosition > (desiredPosition - positionTolerance)) {
       climbSubsystem.SetSpeed(-TopSpeed);
       System.out.println("Higher than point called for");
     }

@@ -10,10 +10,9 @@ import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -22,22 +21,22 @@ import frc.robot.Constants.DIOPortIDs;
 import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.NeoMotorConstants;
 
+import frc.robot.util.Elastic;
+
 public class ClimberSubsystem extends SubsystemBase {
   // Subsystem Constants
   private final SparkFlex ClimbMotor = new SparkFlex(MotorIDs.Climber, MotorType.kBrushless);
   private final RelativeEncoder Encoder = ClimbMotor.getEncoder();
-  private final int ClimbHeight = 70;
+  private final int Limit = 70; // 70 it rotations of output shaft, should be 1750 with gear ratio maybe
+  private final int MaxHeight = 70;
   private final int MinHeight = 1;
-  private final double ManualSpeed = .7;
+  // private final double ManualSpeed = .7;
   private final double Speed = .8;
 
-  private final DigitalInput BeamBreak = new DigitalInput(DIOPortIDs.ClimbBeamBreakLimit);
+  private final DigitalInput LimitSwitch = new DigitalInput(DIOPortIDs.ClimbLimitSwitch);
 
   double positionTolerance = 2; // Can't be 0! May need to change based on speed
   double currentPosition;
-
-  // Subsystem Variables
-  private String Location;
 
   /** Creates a new ClimberSubsystem. */
   public ClimberSubsystem() {
@@ -50,6 +49,9 @@ public class ClimberSubsystem extends SubsystemBase {
     ClimbConfig
         .smartCurrentLimit(NeoMotorConstants.bigMotorCurrentLimit).idleMode(IdleMode.kBrake).closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+    ClimbConfig
+        .inverted(false);
+        
 
     ClimbMotor.configure(ClimbConfig, SparkBase.ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
@@ -58,11 +60,7 @@ public class ClimberSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (GetEncoderPosition() >= ClimbHeight) {
-      Location = "Climb Hight";
-    } else {
-      Location = "Down";
-    }
+
   }
 
   public void DelayMS(int input) {
@@ -74,38 +72,6 @@ public class ClimberSubsystem extends SubsystemBase {
     }
   }
 
-  public void SetSpeed(double Speed) {
-    ClimbMotor.set(Speed);
-  }
-
-  public Command ResetEncoder() {
-    return this.runOnce(() -> Encoder.setPosition(70.0));
-  }
-
-  public double GetEncoderPosition() {
-    return Encoder.getPosition() * -1;
-  }
-
-  public Command Up() {
-    return runOnce(() -> {
-      if (GetEncoderPosition() < ClimbHeight) {
-        ClimbMotor.set(ManualSpeed);
-      } else {
-        Stop();
-      }
-    });
-  }
-
-  public Command Down() {
-    return runOnce(() -> {
-      if (GetEncoderPosition() > MinHeight/*!BeamBreak.get()*/) {
-        ClimbMotor.set(-ManualSpeed);
-      } else {
-        Stop();
-      }
-    });
-  }
-
   public Command CommandStop() {
     return runOnce(() -> Stop());
   }
@@ -114,21 +80,66 @@ public class ClimberSubsystem extends SubsystemBase {
     ClimbMotor.set(0);
   }
 
-  public void SetClimb(int inputPosition) {
+  public void SetSpeed(double speed){
+    ClimbMotor.set(speed);
+  }
+
+  public Command Up() { // run motor positive
+    return startEnd(
+        () -> ClimbMotor.set(Speed),
+        () -> Stop()
+      ).until(() -> GetEncoderPosition() >= MaxHeight);
+  }
+
+  public Command Down() { // run motor negitive
+    return startEnd(
+        () -> ClimbMotor.set(-Speed),
+        () -> Stop()
+      ).until(() -> /*(GetEncoderPosition() <= MinHeight) || */ResetAtLimitSwitch());
+  }
+
+  public void ResetEncoder() {
+    Encoder.setPosition(0);
+  }
+
+  public double GetEncoderPosition() {
+    return Encoder.getPosition();
+  }
+
+  public boolean IsAtLimit() {
+    currentPosition = Encoder.getPosition();
+    if ((currentPosition >= (Limit - positionTolerance) && currentPosition <= (Limit + positionTolerance)) || !LimitSwitch.get())
+      return true;
+    if (currentPosition > Limit) {
+      Stop();
+      return true;
+    } else
+      return false;
+  }
+
+  public boolean ResetAtLimitSwitch() {
+    if (!LimitSwitch.get()) {
+      ResetEncoder();
+      return true;
+    }
+    return false;
+  }
+
+  public void SetClimbPoint(int inputPosition) {
     currentPosition = GetEncoderPosition();
-    if (!((currentPosition <= (inputPosition + positionTolerance))
-        && (currentPosition >= (inputPosition - positionTolerance)))) {
-      System.out.println("Outside Bounds");
-      if (currentPosition < (inputPosition - positionTolerance)) {
-        SetSpeed(-Speed);
-        System.out.println("Above Position");
-      } else if (currentPosition > (inputPosition - positionTolerance)) {
-        System.out.println("BelowPosition");
+    if (!((currentPosition <= (inputPosition + positionTolerance)) && (currentPosition >= (inputPosition - positionTolerance)))) {
+      System.out.println("not at limit: ");
+      if(currentPosition < (inputPosition - positionTolerance)) {
         SetSpeed(Speed);
+        System.out.println("Below input");
+      } else if (currentPosition > (inputPosition - positionTolerance)) {
+        System.out.println("Above input");
+        SetSpeed(-Speed);
       }
     } else {
-      System.out.println("Within Bounds");
+      System.out.println("between tolerance");
       Stop();
     }
+    
   }
 }

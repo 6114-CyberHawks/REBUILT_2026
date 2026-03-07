@@ -26,8 +26,8 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final ClimberSubsystem s_ClimberSubsystem = new ClimberSubsystem();
 
-  private final SetClimb c_RaiseClimb;
-  private final SetClimb c_LowerClimb;
+  private final SetClimb c_Climb;
+  private final SetClimb c_UnClimb;
   private final StopClimb c_StopClimb;
   private final ZeroClimb c_ZeroClimb;
 
@@ -37,8 +37,8 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    c_RaiseClimb = new SetClimb(s_ClimberSubsystem, 70);
-    c_LowerClimb = new SetClimb(s_ClimberSubsystem, 1);
+    c_Climb = new SetClimb(s_ClimberSubsystem, 0);
+    c_UnClimb = new SetClimb(s_ClimberSubsystem, 70);
     c_StopClimb = new StopClimb(s_ClimberSubsystem);
     c_ZeroClimb = new ZeroClimb(s_ClimberSubsystem);
     // Configure the trigger bindings
@@ -57,19 +57,20 @@ public class RobotContainer {
   private void configureBindings() {
 
     new JoystickButton(m_driverController, XboxController.Button.kY.value)
-        .onTrue(c_RaiseClimb);
+        .onTrue(c_Climb);
 
     new JoystickButton(m_driverController, XboxController.Button.kA.value)
-        .onTrue(c_LowerClimb);
+        .onTrue(c_UnClimb);
 
     new JoystickButton(m_driverController, XboxController.Button.kX.value)
         .onTrue(c_ZeroClimb);
       
     Trigger LiftUp = new Trigger(() -> m_driverController.getPOV() == 0);
-    LiftUp.whileTrue(s_ClimberSubsystem.Up()).whileFalse(c_StopClimb);
+    LiftUp.whileTrue(s_ClimberSubsystem.Up()).onFalse(c_StopClimb);
 
     Trigger LiftDown = new Trigger(() -> m_driverController.getPOV() == 180);
-    LiftDown.whileTrue(s_ClimberSubsystem.Down()).whileFalse(c_StopClimb);
+    LiftDown.whileTrue(s_ClimberSubsystem.Down()).onFalse(c_StopClimb);
+    
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
