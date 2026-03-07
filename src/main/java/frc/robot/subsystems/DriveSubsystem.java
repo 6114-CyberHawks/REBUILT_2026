@@ -28,7 +28,7 @@ import edu.wpi.first.math.controller.PIDController;
 //import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;s
 
 //NavX3 liberary
-import com.studica.frc.Navx;
+//import com.studica.frc.Navx;
 
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -62,7 +62,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   
   // The gyro sensor
-  public final static Navx old_m_gyro = new Navx(0, 100);
+  //public final static Navx old_m_gyro = new Navx(0, 100);
   public final static Pigeon2 m_gyro = new Pigeon2(0);
 
   //public final static ADIS16470_IMU archived_m_gyro = new ADIS16470_IMU();
@@ -270,7 +270,7 @@ public void StopAtAngle(int angle, double rot) {
       }
     }
 
-    drive(tempXSpeed, tempYSpeed, 0, true);
+    drive(tempXSpeed, tempYSpeed, 0, false);
   }
 
   /** The only difference is that 0 for posX & posY is replaced with getPose. */

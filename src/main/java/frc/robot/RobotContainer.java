@@ -14,12 +14,6 @@ import edu.wpi.first.math.MathUtil;
 //import edu.wpi.first.math.trajectory.TrajectoryConfig;
 //import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.XboxController;
-//import edu.wpi.first.wpilibj.PS4Controller.Button;
-//import frc.robot.Constants.AutoConstants;
-//import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.OIConstants;
-import frc.robot.commands.Autonomous;
-import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -27,6 +21,15 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 //import static edu.wpi.first.units.Units.Degrees;
 //import java.util.List;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
+//import edu.wpi.first.wpilibj.PS4Controller.Button;
+//import frc.robot.Constants.AutoConstants;
+//import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.OIConstants;
+import frc.robot.commands.AutonomousLeft;
+import frc.robot.commands.AutonomousRight;
+import frc.robot.subsystems.AutonomousModeManager;
+import frc.robot.subsystems.DriveSubsystem;
 
 //import com.studica.frc.Navx;
 
@@ -39,10 +42,13 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 public class RobotContainer {
 
   // Commands : naming convention is c_ for command
-  private final Autonomous c_Autonomous;
+
+  public final AutonomousLeft c_AutonomousLeft;
+  public final AutonomousRight c_AutonomousRight;
 
   // The robot's subsystems
-  private final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  public final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  public final AutonomousModeManager s_AutonomousModeManager;
 
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -66,7 +72,11 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    c_Autonomous = new Autonomous(m_robotDrive);
+    c_AutonomousLeft = new AutonomousLeft(m_robotDrive);
+    c_AutonomousRight = new AutonomousRight(m_robotDrive);
+
+    s_AutonomousModeManager = new AutonomousModeManager(c_AutonomousLeft, c_AutonomousRight);
+    
     // Configure the button bindings
     configureButtonBindings();
 
@@ -117,6 +127,25 @@ public class RobotContainer {
           m_robotDrive.zeroHeading() + ", After Reset: " +
           m_robotDrive.getHeading()), /*Checked the values & reset Yaw*/
         m_robotDrive));
+    /*
+    new POVButton(m_driverController, 0)
+      .onTrue(new InstantCommand(() -> {
+        c_Autonomous = null;
+        System.out.print("\n\nWARNING! All autonomous modes deselected.\n\n");
+      }, m_robotDrive));
+    
+    new POVButton(m_driverController, 270)
+      .onTrue(new InstantCommand(() -> {
+        c_Autonomous = c_AutonomousLeft;
+        System.out.println("\n\nLeft autonomous selected.\n\n");
+      }, m_robotDrive));
+    
+    new POVButton(m_driverController, 90)
+      .onTrue(new InstantCommand(() -> {
+        c_Autonomous = c_AutonomousRight;
+        System.out.println("\n\nRight autonomous selected.\n\n");
+      }, m_robotDrive));
+      */
   }
 
   
@@ -167,6 +196,10 @@ public class RobotContainer {
     // Run path following command, then stop at the end.
     return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
     */
-    return c_Autonomous;
+    if (s_AutonomousModeManager.getAutonomousMode() == "None") {
+      System.out.println("\n\n\nWARNING: NO AUTO SELECTED! Please select an autonomous mode!\n\n\n");
+    }
+
+    return s_AutonomousModeManager.getAutonomousModeCommand();
   }
 }
