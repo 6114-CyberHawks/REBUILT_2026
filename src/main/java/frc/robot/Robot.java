@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.Testing;
+import frc.robot.subsystems.SensorManager;
 
 //import edu.wpi.first.wpilibj.XboxController;
 
@@ -31,7 +31,7 @@ import frc.robot.subsystems.Testing;
  * project.
  */
 public class Robot extends TimedRobot {
-  public BooleanPublisher IRSensor;
+  //public BooleanPublisher IRSensor;
 
   // LED variables and constants
   private AddressableLED FrontLEDBar;
@@ -61,19 +61,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
 
-    IRSensor = NetworkTableInstance.getDefault().getTable("datatable").getBooleanTopic("IR Sensor").publish();
-    
-    // The gyro sensor  
-    DriveSubsystem.m_gyro.enableOptionalMessages(
-      true,
-      false,
-      false,
-      false,
-      true, 
-      true,
-      false,
-      true,
-      false);
+    //IRSensor = NetworkTableInstance.getDefault().getTable("datatable").getBooleanTopic("IR Sensor").publish();
 
     // Setup LED Bars
     LEDBarBuffer = new AddressableLEDBuffer(15); // Number of LEDs we want to control
@@ -171,7 +159,7 @@ public class Robot extends TimedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 
-    System.out.println("IR Sensor: " + new Testing().getIRSenor());
+    System.out.println("IR Sensor: " + new SensorManager().getIRSenor());
 
     scrollingRainbowLEDs.applyTo(LEDBarBuffer);
     //FrontLEDBar.setData(LEDBarBuffer);
@@ -180,8 +168,10 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
+    /*
     boolean Sensor = new Testing().getIRSenor();
     IRSensor.set(Sensor);
     System.out.println("Sensor(?): " + Sensor);
+    */
   }
 }

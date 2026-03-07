@@ -8,6 +8,7 @@ package frc.robot.commands;
 import static edu.wpi.first.units.Units.Degrees;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DriveSubsystem;
@@ -44,55 +45,48 @@ public class Autonomous extends Command {
     (driveSubsystem.getPose().getX()) + ", Y axis(??) position of robot (estimated in inches): " +
     (driveSubsystem.getPose().getY()) + ", Rotation of robot (estimated): " +
     driveSubsystem.getPose().getRotation().getDegrees() + ", Raw Rotation: " +
-    DriveSubsystem.m_gyro.getYaw().in(Degrees) + ", Rotation: " +
-    Math.round(DriveSubsystem.m_gyro.getYaw().in(Degrees))
+    DriveSubsystem.m_gyro.getYaw().getValue().in(Degrees) + ", Rotation: " +
+    Math.round(DriveSubsystem.m_gyro.getYaw().getValue().in(Degrees))
     );
     
     if (timer.get() < 1 && timer.get() > 0) {
       //driveSubsystem.StopAtAngle(0, 0.25);
       driveSubsystem.resetOdometry(Pose2d.kZero);
-    }/*
+    }
     if (timer.get() < 4 && timer.get() > 1) {
       //driveSubsystem.StopAtPosition(0.0, Units.inchesToMeters(40), .1);
     }
     if (timer.get() < 10 && timer.get() > 4) {
-      //driveSubsystem.StopAtPosition(-Units.inchesToMeters(40), 0.0, .1);
-    }*/
-    if (timer.get() < 10 /*15*/ && timer.get() > 1 /*10*/) {
+      driveSubsystem.StopAtPosition(-Units.inchesToMeters(40), 0.0, .1);
+    }
+    if (timer.get() < 15 /*15*/ && timer.get() > 10 /*10*/) {
       System.out.println("Rotating to -30");
-      // Maybe?
-      Thread thread = new Thread(() -> {
-        driveSubsystem.StopAtAngle(-30, 0.075);
-      });
-      thread.start();
 
-      angle = -30;
-      rot = 0.075;
+      driveSubsystem.StopAtAngle(-30, 0.5);
 
+      //angle = -30;
+      //rot = 0.075;
       //driveSubsystem.StopAtAngle(angle, rot);
     }
-    if (timer.get() < 20 /*20*/ && timer.get() > 10 /*15*/) {
+    if (timer.get() < 20 /*20*/ && timer.get() > 15 /*15*/) {
       System.out.println("Reseting rotation to 0");
-      // Maybe?
-      Thread thread = new Thread(() -> {
-        driveSubsystem.StopAtAngle(0, 0.075);
-      });
-      thread.start();
 
-      angle = 0;
-      rot = 0.075;
+      driveSubsystem.StopAtAngle(0, 0.5);
+
+      //angle = 0;
+      //rot = 0.075;
 
       //driveSubsystem.StopAtAngle(angle, rot);
 
       //driveSubsystem.StopAtAngle(-60, 0.5); // The robot doesn't go back to 0...?
-    }/*
+    }
     if (timer.get() < 26 && timer.get() > 20) {
-      //driveSubsystem.StopAtPosition(-Units.inchesToMeters(53), 0.0, .1);
+      driveSubsystem.StopAtPosition(-Units.inchesToMeters(98), 0.0, .1);
     }
     if (timer.get() < 28.5 && timer.get() > 26) {
-      //driveSubsystem.StopAtPosition(0.0, -Units.inchesToMeters(0.01), .05);
-    }*/
-    if (timer.get() > 15) {
+      driveSubsystem.StopAtPosition(0.0, -Units.inchesToMeters(0.01), .05);
+    }
+    if (timer.get() > 30) {
       driveSubsystem.drive(0, 0, 0, false);
     }
   }

@@ -16,7 +16,12 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
-
+import com.ctre.phoenix6.hardware.Pigeon2;
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.StatusSignal;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.math.controller.PIDController;
 //These liberaries are removed and updated to use the liberary for the NavX3.
 //import edu.wpi.first.wpilibj.ADIS16470_IMU;
@@ -57,7 +62,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   
   // The gyro sensor
-  public final static Navx m_gyro = new Navx(0, 100);
+  public final static Navx old_m_gyro = new Navx(0, 100);
+  public final static Pigeon2 m_gyro = new Pigeon2(0);
+
   //public final static ADIS16470_IMU archived_m_gyro = new ADIS16470_IMU();
 
   // Odometry class for tracking robot pose
@@ -65,8 +72,8 @@ public class DriveSubsystem extends SubsystemBase {
       DriveConstants.kDriveKinematics,
       //Rotation2d.fromDegrees(archived_m_gyro.getAngle(IMUAxis.kZ)),
       //m_gyro.getYaw().toString().replaceAll("[^0-9.]", "")) is the new convertion for angle to doubles
-      //m_gyro.getYaw().in(Units.Degrees) ;; new conversion
-      Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degrees)),
+      //m_gyro.getYaw().getValue().in(Units.Degrees) ;; new conversion
+      Rotation2d.fromDegrees(m_gyro.getYaw().getValue().in(Units.Degrees)),
       new SwerveModulePosition[] {
           m_frontLeft.getPosition(),
           m_frontRight.getPosition(),
@@ -79,7 +86,7 @@ public class DriveSubsystem extends SubsystemBase {
     // Usage reporting for MAXSwerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
 
-    m_headingController.setTolerance(1.0,2.0);
+    m_headingController.setTolerance(2.0,4.0);
 
     m_headingController.enableContinuousInput(-180, 180);
   }
@@ -88,7 +95,7 @@ public class DriveSubsystem extends SubsystemBase {
   public void periodic() {
     // Update the odometry in the periodic block
     m_odometry.update(
-        Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degrees)),
+        Rotation2d.fromDegrees(m_gyro.getYaw().getValue().in(Units.Degrees)),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
             m_frontRight.getPosition(),
@@ -113,7 +120,7 @@ public class DriveSubsystem extends SubsystemBase {
    */
   public void resetOdometry(Pose2d pose) {
     m_odometry.resetPosition(
-        Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degrees)),
+        Rotation2d.fromDegrees(m_gyro.getYaw().getValue().in(Units.Degrees)),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
             m_frontRight.getPosition(),
@@ -141,7 +148,7 @@ public class DriveSubsystem extends SubsystemBase {
     var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
         fieldRelative
             ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered,
-                Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degrees)))
+                Rotation2d.fromDegrees(m_gyro.getYaw().getValue().in(Units.Degrees)))
             : new ChassisSpeeds(xSpeedDelivered, ySpeedDelivered, rotDelivered));
     SwerveDriveKinematics.desaturateWheelSpeeds(
         swerveModuleStates, DriveConstants.kMaxSpeedMetersPerSecond);
@@ -183,10 +190,10 @@ public class DriveSubsystem extends SubsystemBase {
     m_rearRight.resetEncoders();
   }
 
-  /** Zeroes the heading of the robot. @return 0: OK, 1: Error */
+  /** Zeroes the heading of the robot. @return Err: 1, OK: 0 */
   public int zeroHeading() {
     System.out.print("Zeroed");
-    return m_gyro.resetYaw();
+    return m_gyro.setYaw(0.0).isOK() ? 0 : 1;
     //archived_m_gyro.reset();
   }
 
@@ -211,21 +218,24 @@ public void StopAtAngle(int angle, double rot, boolean overloadOld) {
 
 /** Stops at angle inputted into the angle params */
 public void StopAtAngle(int angle, double rot) {
+  
+  System.out.println("Calculating Rotation...");
+  double rotationOutput = m_headingController.calculate(getHeading(), angle);
+  rotationOutput = MathUtil.clamp(rotationOutput, -rot, rot);
+
   if (m_headingController.atSetpoint()) {
     System.out.println("At Setpoint");
     drive(0,0,0, false);
     return;
   }
 
-  System.out.println("Calculating Rotation...");
-  double rotationOutput = m_headingController.calculate(getHeading(), angle);
-  rotationOutput = MathUtil.clamp(rotationOutput, -rot, rot);
-
   System.out.println("Running rotation...");
   drive(0, 0, rotationOutput, false);
   }
 
+  
   /** Stops At two angles consecutivly */
+  /*
   public void StopAtAngle(int angle1, double rot1, int angle2, double rot2, int Seconds) {
     StopAtAngle(angle1, rot1);
 
@@ -237,7 +247,7 @@ public void StopAtAngle(int angle, double rot) {
 
     StopAtAngle(angle2, rot2);
   }
-
+  */
   public void StopAtPosition(Double posX, double posY, double speed, double currentPosX, double currentPosY) {
     double tempXSpeed;
     double tempYSpeed;
@@ -284,8 +294,8 @@ public void StopAtAngle(int angle, double rot) {
    * @return the robot's heading in degrees, from -180 to 180
    */
   public double getHeading() {
-    //return Rotation2d.fromDegrees(m_gyro.getYaw().in(Units.Degrees)).getDegrees();
-    return m_gyro.getYaw().in(Units.Degrees);
+    //return Rotation2d.fromDegrees(m_gyro.getYaw().getValue().in(Units.Degrees)).getDegrees();
+    return m_gyro.getYaw().getValue().in(Units.Degrees);
   }
 
   /**
@@ -293,9 +303,9 @@ public void StopAtAngle(int angle, double rot) {
    *
    * @return The turn rate of the robot, in degrees per second
    */
-  public double getTurnRate() {
+  public StatusSignal<LinearAcceleration> getTurnRate() {
     //return archived_m_gyro.getRate(IMUAxis.kZ) * (DriveConstants.kGyroReversed ? -1.0 : 1.0);
-    return Double.valueOf((m_gyro.getAngularVel())[1].toString());// -- not tested
+    return m_gyro.getAccelerationX(); // -- not tested
     //return m_gyro.getAngularVel()[1] * (DriveConstants.kGyroReversed ? -1.0 : 1.0); // newer version -- not tested
   }
 }

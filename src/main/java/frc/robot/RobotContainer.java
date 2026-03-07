@@ -113,8 +113,8 @@ public class RobotContainer {
 
     new JoystickButton(m_driverController, XboxController.Button.kY.value)
         .onTrue(new InstantCommand(() -> System.out.println("Before Reset: " + 
-          m_robotDrive.getHeading() + ", Yaw Reset(?); (0: Ok, 1: Err): " +
-          DriveSubsystem.m_gyro.resetYaw() + ", After Reset: " +
+          m_robotDrive.getHeading() + ", Yaw Reset(?); StatusCode: " +
+          m_robotDrive.zeroHeading() + ", After Reset: " +
           m_robotDrive.getHeading()), /*Checked the values & reset Yaw*/
         m_robotDrive));
   }
