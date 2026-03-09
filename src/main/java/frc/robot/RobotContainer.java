@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 //import static edu.wpi.first.units.Units.Degrees;
 //import java.util.List;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
 //import edu.wpi.first.wpilibj.PS4Controller.Button;
 //import frc.robot.Constants.AutoConstants;
 //import frc.robot.Constants.DriveConstants;
@@ -29,7 +28,7 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.commands.AutonomousLeft;
 import frc.robot.commands.AutonomousRight;
 import frc.robot.subsystems.AutonomousModeManager;
-import frc.robot.subsystems.DataTableManager;
+import frc.robot.subsystems.AlmostDataManager;
 import frc.robot.subsystems.DriveSubsystem;
 
 //import com.studica.frc.Navx;
@@ -50,7 +49,7 @@ public class RobotContainer {
   // The robot's subsystems
   public final DriveSubsystem m_robotDrive = new DriveSubsystem();
   public final AutonomousModeManager s_AutonomousModeManager;
-  public final DataTableManager s_DataTableManager;
+  public final AlmostDataManager s_DataTableManager;
 
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -71,15 +70,17 @@ public class RobotContainer {
     }
   
   /**
-   * The container for the robot. Contains subsystems, OI devices, and commands.
+   * The contains for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+    s_DataTableManager = new AlmostDataManager(null); //DO NOT USE NORMALLY!!
 
-    c_AutonomousLeft = new AutonomousLeft(m_robotDrive);
-    c_AutonomousRight = new AutonomousRight(m_robotDrive);
+    c_AutonomousLeft = new AutonomousLeft(m_robotDrive, s_DataTableManager);
+    c_AutonomousRight = new AutonomousRight(m_robotDrive, s_DataTableManager);
 
     s_AutonomousModeManager = new AutonomousModeManager(c_AutonomousLeft, c_AutonomousRight);
-    s_DataTableManager = new DataTableManager(s_AutonomousModeManager);
+    
+    s_DataTableManager.setAutonomousModeManager(s_AutonomousModeManager);
 
     // Configure the button bindings
     configureButtonBindings();

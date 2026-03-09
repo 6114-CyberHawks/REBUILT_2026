@@ -5,22 +5,23 @@
 
 package frc.robot.commands;
 
-import static edu.wpi.first.units.Units.Degrees;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.AlmostDataManager;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class AutonomousLeft extends Command {
   private final DriveSubsystem driveSubsystem;
+  private final AlmostDataManager dataTableManager;
   private final Timer timer;
 
   /** Creates a new AutonomousC. */
-  public AutonomousLeft(DriveSubsystem s_DriveSubsystem) {
+  public AutonomousLeft(DriveSubsystem s_DriveSubsystem, AlmostDataManager s_DataTableManager) {
     timer = new Timer();
     driveSubsystem = s_DriveSubsystem;
+    dataTableManager = s_DataTableManager;
 
     addRequirements(driveSubsystem);
   }
@@ -38,7 +39,7 @@ public class AutonomousLeft extends Command {
   @Override
   public void execute() {
     // Default Auton
-    
+
     // Prints out Robot positions and rotation
     System.out.println("X axis(??) position of robot (estimated in inches): " +
     (driveSubsystem.getPose().getX()) + ", Y axis(??) position of robot (estimated in inches): " +
@@ -82,7 +83,11 @@ public class AutonomousLeft extends Command {
       driveSubsystem.StopAtPosition(-Units.inchesToMeters(99), 0.0, .25);
     }
     if (timer.get() < 14.2 && timer.get() > 12.75) {
-      driveSubsystem.StopAtPosition(0.0, -Units.inchesToMeters(0.01), .1);
+      if (dataTableManager.getClimbSwitch() == true) {
+        driveSubsystem.drive(0, 0, 0, false);
+      } else {
+        driveSubsystem.StopAtPosition(-Units.inchesToMeters(120), 0.0, .15);
+      }
     }
     if (timer.get() > 14.2) {
       driveSubsystem.drive(0, 0, 0, false);

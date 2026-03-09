@@ -5,17 +5,12 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
 
-import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.AutonomousLeft;
 import frc.robot.commands.AutonomousRight;
 
 public class AutonomousModeManager extends SubsystemBase {
-  private final XboxController m_driverController;
-
   private AutonomousLeft c_AutonomousLeft;
   private AutonomousRight c_AutonomousRight;
 
@@ -23,8 +18,6 @@ public class AutonomousModeManager extends SubsystemBase {
 
   /** Creates a new AutonomousModeManager. */
   public AutonomousModeManager(AutonomousLeft tc_AutonomousLeft, AutonomousRight tc_AutonomousRight) {
-    m_driverController = new XboxController(0);
-
     c_AutonomousLeft = tc_AutonomousLeft;
     c_AutonomousRight = tc_AutonomousRight;
 

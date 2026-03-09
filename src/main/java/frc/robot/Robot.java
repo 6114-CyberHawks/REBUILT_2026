@@ -4,9 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.networktables.BooleanArrayEntry;
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.AddressableLED;
@@ -18,11 +15,7 @@ import edu.wpi.first.wpilibj.util.Color;
 //import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants.OIConstants;
-import frc.robot.subsystems.DataTableManager;
-import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.SensorManager;
 
 //import edu.wpi.first.wpilibj.XboxController;
 
@@ -49,6 +42,8 @@ public class Robot extends TimedRobot {
   private static final Distance kLedSpacing = Units.Meters.of(1 / 12.0);
   private final LEDPattern scrollingRainbowLEDs = rainbowLEDs.scrollAtAbsoluteSpeed(Units.MetersPerSecond.of(1), kLedSpacing);
   
+  //private final RobotContainer m_RobotContainer = new RobotContainer();
+
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
@@ -160,7 +155,8 @@ public class Robot extends TimedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
 
-    System.out.println("IR Sensor: " + new SensorManager().getIRSenor());
+    //System.out.println("IR Sensor: " + m_RobotContainer.s_DataTableManager.getIRSenor());
+    //System.out.println("Climb Limit Switch: " + m_RobotContainer.s_DataTableManager.getClimbSwitch());
 
     scrollingRainbowLEDs.applyTo(LEDBarBuffer);
     //FrontLEDBar.setData(LEDBarBuffer);
