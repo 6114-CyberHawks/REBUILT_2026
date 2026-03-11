@@ -9,8 +9,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.AlmostDataManager;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.util.AlmostDataManager;
 
 public class AutonomousRight extends Command {
   private final DriveSubsystem driveSubsystem;

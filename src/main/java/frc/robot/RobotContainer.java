@@ -27,9 +27,9 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.AutonomousLeft;
 import frc.robot.commands.AutonomousRight;
-import frc.robot.subsystems.AutonomousModeManager;
-import frc.robot.subsystems.AlmostDataManager;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.util.AlmostDataManager;
+import frc.robot.util.AutonomousModeManager;
 
 //import com.studica.frc.Navx;
 
@@ -47,7 +47,7 @@ public class RobotContainer {
   public final AutonomousRight c_AutonomousRight;
 
   // The robot's subsystems
-  public final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  public final DriveSubsystem m_robotDrive = new DriveSubsystem();;
   public final AutonomousModeManager s_AutonomousModeManager;
   public final AlmostDataManager s_DataTableManager;
 
@@ -81,6 +81,10 @@ public class RobotContainer {
     s_AutonomousModeManager = new AutonomousModeManager(c_AutonomousLeft, c_AutonomousRight);
     
     s_DataTableManager.setAutonomousModeManager(s_AutonomousModeManager);
+
+    //s_DataTableManager.sendNotification(s_DataTableManager.notificationTestInfo);
+    //s_DataTableManager.sendNotification(s_DataTableManager.notificationTestWarning);
+    //s_DataTableManager.sendNotification(s_DataTableManager.notificationTestError);
 
     // Configure the button bindings
     configureButtonBindings();
@@ -202,6 +206,7 @@ public class RobotContainer {
     return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
     */
     if (s_AutonomousModeManager.getAutonomousMode() == "None") {
+      s_DataTableManager.sendNotification(s_DataTableManager.notificationNullAutonModeError);
       System.out.println("\n\n\nWARNING: NO AUTO SELECTED! Please select an autonomous mode!\n\n\n");
     }
 
