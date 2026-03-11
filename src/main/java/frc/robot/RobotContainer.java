@@ -21,15 +21,15 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 //import static edu.wpi.first.units.Units.Degrees;
 //import java.util.List;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
 //import edu.wpi.first.wpilibj.PS4Controller.Button;
 //import frc.robot.Constants.AutoConstants;
 //import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.AutonomousLeft;
 import frc.robot.commands.AutonomousRight;
-import frc.robot.subsystems.AutonomousModeManager;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.util.AlmostDataManager;
+import frc.robot.util.AutonomousModeManager;
 
 //import com.studica.frc.Navx;
 
@@ -47,8 +47,9 @@ public class RobotContainer {
   public final AutonomousRight c_AutonomousRight;
 
   // The robot's subsystems
-  public final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  public final DriveSubsystem m_robotDrive = new DriveSubsystem();;
   public final AutonomousModeManager s_AutonomousModeManager;
+  public final AlmostDataManager s_DataTableManager;
 
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -69,14 +70,22 @@ public class RobotContainer {
     }
   
   /**
-   * The container for the robot. Contains subsystems, OI devices, and commands.
+   * The contains for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    c_AutonomousLeft = new AutonomousLeft(m_robotDrive);
-    c_AutonomousRight = new AutonomousRight(m_robotDrive);
+    s_DataTableManager = new AlmostDataManager(null); //DO NOT USE NORMALLY!!
+
+    c_AutonomousLeft = new AutonomousLeft(m_robotDrive, s_DataTableManager);
+    c_AutonomousRight = new AutonomousRight(m_robotDrive, s_DataTableManager);
 
     s_AutonomousModeManager = new AutonomousModeManager(c_AutonomousLeft, c_AutonomousRight);
     
+    s_DataTableManager.setAutonomousModeManager(s_AutonomousModeManager);
+
+    //s_DataTableManager.sendNotification(s_DataTableManager.notificationTestInfo);
+    //s_DataTableManager.sendNotification(s_DataTableManager.notificationTestWarning);
+    //s_DataTableManager.sendNotification(s_DataTableManager.notificationTestError);
+
     // Configure the button bindings
     configureButtonBindings();
 
@@ -197,6 +206,7 @@ public class RobotContainer {
     return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
     */
     if (s_AutonomousModeManager.getAutonomousMode() == "None") {
+      s_DataTableManager.sendNotification(s_DataTableManager.notificationNullAutonModeError);
       System.out.println("\n\n\nWARNING: NO AUTO SELECTED! Please select an autonomous mode!\n\n\n");
     }
 

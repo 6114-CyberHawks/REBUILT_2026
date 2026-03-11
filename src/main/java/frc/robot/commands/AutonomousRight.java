@@ -5,24 +5,26 @@
 
 package frc.robot.commands;
 
-import static edu.wpi.first.units.Units.Degrees;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.util.AlmostDataManager;
 
 public class AutonomousRight extends Command {
   private final DriveSubsystem driveSubsystem;
+  private final AlmostDataManager dataTableManager;
   private final Timer timer;
 
   /** Creates a new AutonomousC. */
-  public AutonomousRight(DriveSubsystem s_DriveSubsystem) {
+  public AutonomousRight(DriveSubsystem s_DriveSubsystem, AlmostDataManager s_DataTableManager) {
     timer = new Timer();
     driveSubsystem = s_DriveSubsystem;
+    dataTableManager = s_DataTableManager;
 
     addRequirements(driveSubsystem);
+    addRequirements(dataTableManager);
   }
 
   // Called when the command is initially scheduled.
@@ -38,8 +40,7 @@ public class AutonomousRight extends Command {
   @Override
   public void execute() {
     // Default Auton
-    int angle;
-    double rot;
+
     // Prints out Robot positions and rotation
     System.out.println("X axis(??) position of robot (estimated in inches): " +
     (driveSubsystem.getPose().getX()) + ", Y axis(??) position of robot (estimated in inches): " +
@@ -56,9 +57,9 @@ public class AutonomousRight extends Command {
       //driveSubsystem.StopAtPosition(0.0, Units.inchesToMeters(40), .1);
     }*/
     if (timer.get() < 2.5 && timer.get() > 1) {
-      driveSubsystem.StopAtPosition(Units.inchesToMeters(50), 0.0, .25);
+      driveSubsystem.StopAtPosition(-Units.inchesToMeters(30), 0.0, .25);
     }
-    if (timer.get() < 3.25 /*15*/ && timer.get() > 2.5 /*10*/) {
+    if (timer.get() < 3.5 /*15*/ && timer.get() > 2.5 /*10*/) {
       System.out.println("Rotating to 30");
 
       driveSubsystem.StopAtAngle(30, 0.75);
@@ -67,10 +68,10 @@ public class AutonomousRight extends Command {
       //rot = 0.075;
       //driveSubsystem.StopAtAngle(angle, rot);
     }
-    if (timer.get() < 10.75 /*20*/ && timer.get() > 10 /*15*/) {
-      System.out.println("Reseting rotation to 180");
+    if (timer.get() < 8 /*20*/ && timer.get() > 7 /*15*/) {
+      System.out.println("rotating to 180");
 
-      driveSubsystem.StopAtAngle(180, 0.75);
+      driveSubsystem.StopAtAngle(180, 1);
 
       //angle = 0;
       //rot = 0.075;
@@ -79,13 +80,17 @@ public class AutonomousRight extends Command {
 
       //driveSubsystem.StopAtAngle(-60, 0.5); // The robot doesn't go back to 0...?
     }
-    if (timer.get() < 12.75 && timer.get() > 10.75) {
-      driveSubsystem.StopAtPosition(-Units.inchesToMeters(99), 0.0, .25);
+    if (timer.get() < 25/*13.5*/ && timer.get() > 8) {
+      if (dataTableManager.getClimbSwitch() == true) {
+        driveSubsystem.drive(0, 0, 0, false);
+      } else {
+        driveSubsystem.StopAtPosition(-Units.inchesToMeters(120), 0.0, .15);
+      }
     }
-    if (timer.get() < 14.2 && timer.get() > 12.75) {
-      driveSubsystem.StopAtPosition(0.0, Units.inchesToMeters(0.01), .1);
-    }
-    if (timer.get() > 14.2) {
+    //if (timer.get() < 14.95 && timer.get() > 13.5) {
+    //  driveSubsystem.StopAtPosition(0.0, -Units.inchesToMeters(0.01), .1);
+    //}
+    if (timer.get() > 25) {
       driveSubsystem.drive(0, 0, 0, false);
     }
   }

@@ -17,10 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
 import com.ctre.phoenix6.hardware.Pigeon2;
-import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.math.controller.PIDController;
 //These liberaries are removed and updated to use the liberary for the NavX3.
@@ -270,7 +267,7 @@ public void StopAtAngle(int angle, double rot) {
       }
     }
 
-    drive(tempXSpeed, tempYSpeed, 0, false);
+    drive(tempXSpeed, tempYSpeed, 0, true);
   }
 
   /** The only difference is that 0 for posX & posY is replaced with getPose. */
