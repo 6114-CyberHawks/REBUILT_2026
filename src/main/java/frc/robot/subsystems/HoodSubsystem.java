@@ -34,15 +34,17 @@ public class HoodSubsystem extends SubsystemBase {
   // Constants
   private final double manualSpeed = .3;
 
+  public static final double PositionOffset = .02;
+
   // Encoder positions (in rotations of the gearbox output shaft)
-  private static final double MIN_POSITION = 0.01; // TODO: find lowest wanted position
-  private static final double MAX_POSITION = 0.4;
+  private static final double MIN_POSITION = 0.01 + PositionOffset; // TODO: find lowest wanted position
+  private static final double MAX_POSITION = 0.4 + PositionOffset;
 
   // Preset positions - in absolute encoder positions TODO: Find updated locations for each point
-  private static final double LOW_POSITION = 0.0;
-  private static final double MID_POSITION = 0.075;
-  private static final double HIGH_POSITION = 0.15; // TODO: figure out actual location
-  private static final double Pass_POSITION = 0.365;
+  private static final double LOW_POSITION = 0.0 + PositionOffset;
+  private static final double MID_POSITION = 0.075 + PositionOffset;
+  private static final double HIGH_POSITION = 0.15 + PositionOffset; // TODO: figure out actual location
+  private static final double Pass_POSITION = 0.365 + PositionOffset;
 
   // gear ratio on motor to absolute encoder
   private static final double GEAR_RATIO = 16;

@@ -43,10 +43,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.AutonomousLeft;
-import frc.robot.commands.AutonomousRight;
-import frc.robot.subsystems.AutonomousModeManager;
-import frc.robot.subsystems.AlmostDataManager;
+// import frc.robot.commands.AutonomousLeft;
+// import frc.robot.commands.AutonomousRight;
+// import frc.robot.subsystems.AutonomousModeManager;
+// import frc.robot.subsystems.AlmostDataManager;
 import frc.robot.subsystems.DriveSubsystem;
 
 /**
@@ -67,8 +67,8 @@ public class RobotContainer {
   private final IntakeSubsystem s_IntakeSubsystem = new IntakeSubsystem();
   private final ClimberSubsystem s_ClimberSubsystem = new ClimberSubsystem();
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
-  private final AutonomousModeManager s_AutonomousModeManager;
-  private final AlmostDataManager s_DataTableManager;
+//   private final AutonomousModeManager s_AutonomousModeManager;
+//   private final AlmostDataManager s_DataTableManager;
 
   // The robot's subsystems and commands are defined here...
   // shooter
@@ -99,8 +99,8 @@ public class RobotContainer {
   private final SetClimb c_UnClimb;
   private final StopClimb c_StopClimb;
 
-  private final AutonomousLeft c_AutonomousLeft;
-  private final AutonomousRight c_AutonomousRight;
+//   private final AutonomousLeft c_AutonomousLeft;
+//   private final AutonomousRight c_AutonomousRight;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final XboxController m_driverController = new XboxController(OperatorConstants.kDriverControllerPort);
@@ -126,7 +126,7 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    s_DataTableManager = new AlmostDataManager(null); // DO NOT USE NORMALLY!!
+    // s_DataTableManager = new AlmostDataManager(null); // DO NOT USE NORMALLY!!
 
     // shooter
     c_ShootTurret = new ShootTurret(s_TurretSubsystem);
@@ -164,12 +164,12 @@ public class RobotContainer {
     c_StopClimb = new StopClimb(s_ClimberSubsystem);
 
     // autos
-    c_AutonomousLeft = new AutonomousLeft(m_robotDrive, s_DataTableManager);
-    c_AutonomousRight = new AutonomousRight(m_robotDrive, s_DataTableManager);
+    // c_AutonomousLeft = new AutonomousLeft(m_robotDrive, s_DataTableManager);
+    // c_AutonomousRight = new AutonomousRight(m_robotDrive, s_DataTableManager);
 
-    s_AutonomousModeManager = new AutonomousModeManager(c_AutonomousLeft, c_AutonomousRight);
+    // s_AutonomousModeManager = new AutonomousModeManager(c_AutonomousLeft, c_AutonomousRight);
 
-    s_DataTableManager.setAutonomousModeManager(s_AutonomousModeManager);
+    // s_DataTableManager.setAutonomousModeManager(s_AutonomousModeManager);
 
     // initilize commands
     // Configure the trigger bindings
@@ -219,11 +219,11 @@ public class RobotContainer {
     // turret / hopper
     new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
         .whileTrue(c_ShootTurret).whileTrue(c_hopperForward).whileTrue(c_FeedForward) // held
-        .onFalse(c_StopShooter).whileFalse(c_HopperOcilate).onFalse(c_StopFeed); // released
+        .onFalse(c_StopShooter).whileFalse(c_hopperStop).onFalse(c_StopFeed); // released
 
     new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
         .whileTrue(c_ReverseShooter).whileTrue(c_hopperReverse).whileTrue(c_ReverseFeed) // held
-        .onFalse(c_StopShooter).onFalse(c_StopFeed).whileFalse(c_HopperOcilate); // released
+        .onFalse(c_StopShooter).onFalse(c_StopFeed).whileFalse(c_hopperStop); // released
 
     // Hood
     new JoystickButton(m_driverController, XboxController.Button.kY.value)
@@ -233,13 +233,17 @@ public class RobotContainer {
         .onTrue(new InstantCommand(s_HoodSubsystem::decrementPosition, s_HoodSubsystem));
 
     m_buttonBox1.button(ButtonBoxIDs.HoodClose)
-        .onTrue(new InstantCommand(s_HoodSubsystem::setLowPosition, s_HoodSubsystem));
+        .onTrue(new InstantCommand(s_HoodSubsystem::setLowPosition, s_HoodSubsystem))
+        .toggleOnTrue(c_ShootTurret);
     m_buttonBox1.button(ButtonBoxIDs.HoodMid)
-        .onTrue(new InstantCommand(s_HoodSubsystem::setMidPosition, s_HoodSubsystem));
+        .onTrue(new InstantCommand(s_HoodSubsystem::setMidPosition, s_HoodSubsystem))
+        .toggleOnTrue(c_ShootTurret);
     m_buttonBox1.button(ButtonBoxIDs.HoodFar)
-        .onTrue(new InstantCommand(s_HoodSubsystem::setHighPosition, s_HoodSubsystem));
+        .onTrue(new InstantCommand(s_HoodSubsystem::setHighPosition, s_HoodSubsystem))
+        .toggleOnTrue(c_ShootTurret);
     m_buttonBox1.button(ButtonBoxIDs.HoodPass)
-        .onTrue(new InstantCommand(s_HoodSubsystem::setPassPosition, s_HoodSubsystem));
+        .onTrue(new InstantCommand(s_HoodSubsystem::setPassPosition, s_HoodSubsystem))
+        .toggleOnTrue(c_ShootTurret);
 
     // Intake
     m_buttonBox2.button(ButtonBoxIDs.DeployIntake)
@@ -269,12 +273,11 @@ public class RobotContainer {
 
     // button box shooter
     m_buttonBox2.button(ButtonBoxIDs.IncreaseShoot)
-        .onTrue(c_IncreaseShootSpeed);
+        .whileTrue(c_IncreaseShootSpeed);
 
     m_buttonBox2.button(ButtonBoxIDs.DecreaseShoot)
-        .onTrue(c_DecreaseShootSpeed);
+        .whileTrue(c_DecreaseShootSpeed);
 
-    // LiftDown.whileTrue(s_ClimberSubsystem.Down()).onFalse(c_StopClimb);
   }
 
   /**
@@ -282,57 +285,57 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
-    /*
-     * Default Automous Command
-     * 
-     * // Create config for trajectory
-     * TrajectoryConfig config = new TrajectoryConfig(
-     * AutoConstants.kMaxSpeedMetersPerSecond,
-     * AutoConstants.kMaxAccelerationMetersPerSecondSquared)
-     * // Add kinematics to ensure max speed is actually obeyed
-     * .setKinematics(DriveConstants.kDriveKinematics);
-     * 
-     * // An example trajectory to follow. All units in meters.
-     * Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
-     * // Start at the origin facing the +X direction
-     * new Pose2d(0, 0, new Rotation2d(0)),
-     * // Pass through these two interior waypoints, making an 's' curve path
-     * List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-     * // End 3 meters straight ahead of where we started, facing forward
-     * new Pose2d(3, 0, new Rotation2d(0)),
-     * config);
-     * 
-     * var thetaController = new ProfiledPIDController(
-     * AutoConstants.kPThetaController, 0, 0,
-     * AutoConstants.kThetaControllerConstraints);
-     * thetaController.enableContinuousInput(-Math.PI, Math.PI);
-     * 
-     * SwerveControllerCommand swerveControllerCommand = new
-     * SwerveControllerCommand(
-     * exampleTrajectory,
-     * m_robotDrive::getPose, // Functional interface to feed supplier
-     * DriveConstants.kDriveKinematics,
-     * 
-     * // Position controllers
-     * new PIDController(AutoConstants.kPXController, 0, 0),
-     * new PIDController(AutoConstants.kPYController, 0, 0),
-     * thetaController,
-     * m_robotDrive::setModuleStates,
-     * m_robotDrive);
-     * 
-     * // Reset odometry to the starting pose of the trajectory.
-     * m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
-     * 
-     * // Run path following command, then stop at the end.
-     * return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0,
-     * false));
-     */
-    if (s_AutonomousModeManager.getAutonomousMode() == "None") {
-      System.out.println("\n\n\nWARNING: NO AUTO SELECTED! Please select an autonomous mode!\n\n\n");
-    }
+//   public Command getAutonomousCommand() {
+//     /*
+//      * Default Automous Command
+//      * 
+//      * // Create config for trajectory
+//      * TrajectoryConfig config = new TrajectoryConfig(
+//      * AutoConstants.kMaxSpeedMetersPerSecond,
+//      * AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+//      * // Add kinematics to ensure max speed is actually obeyed
+//      * .setKinematics(DriveConstants.kDriveKinematics);
+//      * 
+//      * // An example trajectory to follow. All units in meters.
+//      * Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
+//      * // Start at the origin facing the +X direction
+//      * new Pose2d(0, 0, new Rotation2d(0)),
+//      * // Pass through these two interior waypoints, making an 's' curve path
+//      * List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+//      * // End 3 meters straight ahead of where we started, facing forward
+//      * new Pose2d(3, 0, new Rotation2d(0)),
+//      * config);
+//      * 
+//      * var thetaController = new ProfiledPIDController(
+//      * AutoConstants.kPThetaController, 0, 0,
+//      * AutoConstants.kThetaControllerConstraints);
+//      * thetaController.enableContinuousInput(-Math.PI, Math.PI);
+//      * 
+//      * SwerveControllerCommand swerveControllerCommand = new
+//      * SwerveControllerCommand(
+//      * exampleTrajectory,
+//      * m_robotDrive::getPose, // Functional interface to feed supplier
+//      * DriveConstants.kDriveKinematics,
+//      * 
+//      * // Position controllers
+//      * new PIDController(AutoConstants.kPXController, 0, 0),
+//      * new PIDController(AutoConstants.kPYController, 0, 0),
+//      * thetaController,
+//      * m_robotDrive::setModuleStates,
+//      * m_robotDrive);
+//      * 
+//      * // Reset odometry to the starting pose of the trajectory.
+//      * m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
+//      * 
+//      * // Run path following command, then stop at the end.
+//      * return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0,
+//      * false));
+//      */
+//     if (s_AutonomousModeManager.getAutonomousMode() == "None") {
+//       System.out.println("\n\n\nWARNING: NO AUTO SELECTED! Please select an autonomous mode!\n\n\n");
+//     }
 
-    return s_AutonomousModeManager.getAutonomousModeCommand();
-  }
+//     return s_AutonomousModeManager.getAutonomousModeCommand();
+//   }
 
 }

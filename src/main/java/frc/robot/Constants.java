@@ -131,8 +131,8 @@ public final class Constants {
   }
 
   public static class OperatorConstants {
-    public static final int kDriverControllerPort = 2;
-    public static final int kOperatorControllerPort1 = 0;
+    public static final int kDriverControllerPort = 0;
+    public static final int kOperatorControllerPort1 = 2;
     public static final int kOperatorControllerPort2 = 1;
 
     public static final double kDriveDeadband = 0.05;
@@ -148,8 +148,8 @@ public final class Constants {
      public static final int HoodFar = 6; // 1SW6
      public static final int HoodPass = 7; // 1SW7
 
-     public static final int DeployIntake = 2; // 2SW2
-     public static final int StowIntake = 3; // 2SW3
+     public static final int DeployIntake = 3; // 2SW2
+     public static final int StowIntake = 2; // 2SW3
      public static final int IncreaseShoot = 4; // 2SW4
      public static final int DecreaseShoot = 5; // 2SW5
      public static final int RunIntake = 6; // 2SW6

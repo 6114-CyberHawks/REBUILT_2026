@@ -22,15 +22,15 @@ public class IntakeSubsystem extends SubsystemBase {
   private final SparkMax intakeMotor = new SparkMax(MotorIDs.IntakeMotor, MotorType.kBrushless);
 
   // Soft limits
-  private static final double FORWARD_SOFT_LIMIT = 0.26;
+  private static final double FORWARD_SOFT_LIMIT = 0.425;
   private static final double REVERSE_SOFT_LIMIT = -0.01;
 
   // Motor speeds
-  private static final double DEPLOY_SPEED = 0.3;
-  private static final double STOW_SPEED = 0.5;
+  private static final double DEPLOY_SPEED = 0.1;
+  private static final double STOW_SPEED = 0.1;
 
   // Holding voltage to fight gravity when stopped
-  private static final double HOLD_VOLTAGE = -0.08; // Tune this value (start small!)
+  private static final double HOLD_VOLTAGE = -0.3; // Tune this value (start small!)
 
   public IntakeSubsystem() {
     configureMotors();
@@ -39,21 +39,17 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private void configureMotors() {
     SparkMaxConfig leaderConfig = new SparkMaxConfig();
-
     leaderConfig.encoder
         .positionConversionFactor(1.0 / 23.0)
         .velocityConversionFactor(1.0 / 23.0);
-
     leaderConfig.softLimit
         .forwardSoftLimit(FORWARD_SOFT_LIMIT)
         .forwardSoftLimitEnabled(true)
         .reverseSoftLimit(REVERSE_SOFT_LIMIT)
         .reverseSoftLimitEnabled(true);
-
     leaderConfig
         .smartCurrentLimit(NeoMotorConstants.IntakePivotCurrentLimit).idleMode(IdleMode.kBrake).closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-
     leaderConfig
         .inverted(false); // Adjust based on your testing
 
@@ -63,7 +59,6 @@ public class IntakeSubsystem extends SubsystemBase {
     followerConfig
         .smartCurrentLimit(NeoMotorConstants.IntakePivotCurrentLimit).idleMode(IdleMode.kBrake).closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-
     followerConfig
         .follow(leaderMotor, MotorFollowerConstants.IntakePivotFollowerIsOppositeOrientationAsLeader);
 
