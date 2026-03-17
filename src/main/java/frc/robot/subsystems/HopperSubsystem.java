@@ -18,8 +18,8 @@ import frc.robot.Constants.NeoMotorConstants;
 
 public class HopperSubsystem extends SubsystemBase {
   private final SparkMax HopperMotor = new SparkMax(MotorIDs.HopperMotor, MotorType.kBrushless);
-  private final double HighSpeed = .8;
-  private final double LowSpeed = .4;
+  private final double HighSpeed = .2;
+  private final double LowSpeed = .1;
 
   /** Creates a new HopperSubsystem. */
   public HopperSubsystem() {

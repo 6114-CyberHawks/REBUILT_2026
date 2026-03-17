@@ -132,8 +132,8 @@ public final class Constants {
 
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
-    public static final int kOperatorControllerPort1 = 2;
-    public static final int kOperatorControllerPort2 = 1;
+    public static final int kOperatorControllerPort1 = 1;
+    public static final int kOperatorControllerPort2 = 2;
 
     public static final double kDriveDeadband = 0.05;
   }

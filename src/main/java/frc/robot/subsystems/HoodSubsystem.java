@@ -34,17 +34,17 @@ public class HoodSubsystem extends SubsystemBase {
   // Constants
   private final double manualSpeed = .3;
 
-  public static final double PositionOffset = .02;
+  public static final double PositionOffset = 0.227;
 
   // Encoder positions (in rotations of the gearbox output shaft)
-  private static final double MIN_POSITION = 0.01 + PositionOffset; // TODO: find lowest wanted position
-  private static final double MAX_POSITION = 0.4 + PositionOffset;
+  private static final double MIN_POSITION = 0.005 - PositionOffset;
+  private static final double MAX_POSITION = 0.6 -PositionOffset;
 
-  // Preset positions - in absolute encoder positions TODO: Find updated locations for each point
-  private static final double LOW_POSITION = 0.0 + PositionOffset;
-  private static final double MID_POSITION = 0.075 + PositionOffset;
-  private static final double HIGH_POSITION = 0.15 + PositionOffset; // TODO: figure out actual location
-  private static final double Pass_POSITION = 0.365 + PositionOffset;
+  // Preset positions - in absolute encoder positions
+  private static final double LOW_POSITION = 0.070 - PositionOffset;
+  private static final double MID_POSITION = 0.224 - PositionOffset;
+  private static final double HIGH_POSITION = 0.260 - PositionOffset;
+  private static final double Pass_POSITION = 0.520 - PositionOffset;
 
   // gear ratio on motor to absolute encoder
   private static final double GEAR_RATIO = 16;
@@ -156,7 +156,7 @@ public class HoodSubsystem extends SubsystemBase {
    */
   public void setLowPosition() {
     setPosition(LOW_POSITION);
-    TurretSubsystem.ShootVelocity = 3800;
+    TurretSubsystem.ShootVelocity = 3500;
     TurretSubsystem.FeedSpeed = .9;
   }
 
@@ -183,8 +183,8 @@ public class HoodSubsystem extends SubsystemBase {
    */
   public void setPassPosition() {
     setPosition(Pass_POSITION);
-    TurretSubsystem.ShootVelocity = 2500;
-    TurretSubsystem.FeedSpeed = .9;
+    TurretSubsystem.ShootVelocity = 6000;
+    TurretSubsystem.FeedSpeed = 1;
   }
 
   /**

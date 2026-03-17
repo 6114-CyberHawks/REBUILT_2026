@@ -169,6 +169,11 @@ public class TurretSubsystem extends SubsystemBase {
     pidController.setSetpoint(ShootVelocity, SparkMax.ControlType.kVelocity);
   }
 
+  public void ShootFuel(int Speed) {
+    ShootVelocity = Speed;
+    pidController.setSetpoint(ShootVelocity, SparkMax.ControlType.kVelocity);
+  }
+
   public void ReverseShooter() {
     pidController.setSetpoint(-2000, SparkMax.ControlType.kVelocity);
   }
