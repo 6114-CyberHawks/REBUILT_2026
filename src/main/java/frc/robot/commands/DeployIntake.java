@@ -30,7 +30,7 @@ public class DeployIntake extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    intakeSubsystem.StopIntakePivot();
+    // intakeSubsystem.StopIntakePivot();
   }
 
   // Returns true when the command should end.
