@@ -24,9 +24,12 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
 
   public static class MotorFollowerConstants {
-    public static final boolean TurretFollower1IsOppositeOrientationAsLeader = false;// is motor facing the same direction as leader
-    public static final boolean TurretFollower2IsOppositeOrientationAsLeader = true; // is motor facing the same direction as leader
-    public static final boolean IntakePivotFollowerIsOppositeOrientationAsLeader = true; // is motor facing the same direction as leader
+    public static final boolean TurretFollower1IsOppositeOrientationAsLeader = false;// is motor facing the same
+                                                                                     // direction as leader
+    public static final boolean TurretFollower2IsOppositeOrientationAsLeader = true; // is motor facing the same
+                                                                                     // direction as leader
+    public static final boolean IntakePivotFollowerIsOppositeOrientationAsLeader = true; // is motor facing the same
+                                                                                         // direction as leader
 
   }
 
@@ -138,23 +141,42 @@ public final class Constants {
     public static final double kDriveDeadband = 0.05;
   }
 
-  public static class ButtonBoxIDs{
-     public static final int ClimbUp = 1; // 1SW1
-     public static final int ClimbDown = 2; // 1SW2
-     public static final int ClimbUpManual = 3; // 1SW3
-     public static final int ClimbDownManual = 8; // 1SW8
-     public static final int HoodClose = 4; // 1SW4
-     public static final int HoodMid = 5; // 1SW5
-     public static final int HoodFar = 6; // 1SW6
-     public static final int HoodPass = 7; // 1SW7
+  public static class ButtonBoxIDs {
+    public static final int ClimbUp = 1; // 1SW1
+    public static final int ClimbDown = 2; // 1SW2
+    public static final int ClimbUpManual = 3; // 1SW3
+    public static final int ClimbDownManual = 8; // 1SW8
+    public static final int HoodClose = 4; // 1SW4
+    public static final int HoodMid = 5; // 1SW5
+    public static final int HoodFar = 6; // 1SW6
+    public static final int HoodPass = 7; // 1SW7
 
-     public static final int DeployIntake = 3; // 2SW2
-     public static final int StowIntake = 2; // 2SW3
-     public static final int IncreaseShoot = 4; // 2SW4
-     public static final int DecreaseShoot = 5; // 2SW5
-     public static final int RunIntake = 6; // 2SW6
-     public static final int WiggleIntake = 7; // 2SW7
-     public static final int ReverseIntake = 8; // 2SW8
-
+    public static final int DeployIntake = 3; // 2SW2
+    public static final int StowIntake = 2; // 2SW3
+    public static final int IncreaseShoot = 4; // 2SW4
+    public static final int DecreaseShoot = 5; // 2SW5
+    public static final int RunIntake = 6; // 2SW6
+    public static final int WiggleIntake = 7; // 2SW7
+    public static final int ReverseIntake = 8; // 2SW8
   }
+
+  public static final class VisionConstants {
+    // Limelight physical constants
+    public static final double LIMELIGHT_HEIGHT_METERS = .501; // Measure your actual height
+    public static final double LIMELIGHT_MOUNT_ANGLE_DEGREES = 25.0; // Measure your actual angle
+
+    // Hub target height (from game manual)
+    public static final double HUB_APRILTAG_HEIGHT_INCHES = 44.25;
+
+    // AprilTag ID for your alliance hub
+    public static final int[] ALLIANCE_HUB_TAG_ID_RED = { 1, 2, 3, 4, 5, 8, 9, 10 };
+    public static final int[] ALLIANCE_HUB_TAG_ID_Blue = { 18, 19, 20, 21, 24, 25, 26, 27 };
+    public static final int[] ALLIANCE_TOWER_TAG_ID_RED = { 15, 16 };
+    public static final int[] ALLIANCE_TOWER_TAG_ID_Blue = { 31, 32 };
+
+    // Tolerances
+    public static final double DISTANCE_TOLERANCE_INCHES = 3.0;
+    public static final double ANGLE_TOLERANCE_DEGREES = 2.0;
+  }
+
 }

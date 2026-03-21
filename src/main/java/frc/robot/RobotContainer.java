@@ -44,6 +44,7 @@ import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.subsystems.VisionSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -81,6 +82,7 @@ public class RobotContainer {
   private final IntakeSubsystem s_IntakeSubsystem = new IntakeSubsystem();
   private final ClimberSubsystem s_ClimberSubsystem = new ClimberSubsystem();
   private final DriveSubsystem s_robotDrive = new DriveSubsystem();
+  private final VisionSubsystem s_VisionSubsystem = new VisionSubsystem();
   private final AutonomousModeManager s_AutonomousModeManager;
   private final AlmostDataManager s_DataTableManager;
 
