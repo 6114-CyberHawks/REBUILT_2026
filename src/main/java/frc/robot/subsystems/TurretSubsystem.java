@@ -43,8 +43,8 @@ public class TurretSubsystem extends SubsystemBase {
   // PID Constants - TUNE THESE VALUES
   private static final double kP = 0.0005;
   private static final double kI = 0.0;
-  private static final double kD = 0.0;
-  private static final double kFF = 0.00006;
+  private static final double kD = 0.0005;
+  private static final double kFF = 0.0001;
 
   // private static boolean limelightAiming = false;
   // private String AimLocation;
@@ -65,11 +65,12 @@ public class TurretSubsystem extends SubsystemBase {
         .velocityFF(kFF, ClosedLoopSlot.kSlot0)
         .outputRange(-1, 1, ClosedLoopSlot.kSlot0);
     ShootLeaderConfig.closedLoop
-        .allowedClosedLoopError(2, ClosedLoopSlot.kSlot0)
+        .allowedClosedLoopError(10, ClosedLoopSlot.kSlot0)
         .maxMotion
             .cruiseVelocity(10000, ClosedLoopSlot.kSlot0)
             .maxAcceleration(3000, ClosedLoopSlot.kSlot0);
     ShootLeaderConfig
+        .voltageCompensation(12.0)
         .inverted(false);
 
     SparkMaxConfig ShootFollower1Config = new SparkMaxConfig(); // follower shooter1

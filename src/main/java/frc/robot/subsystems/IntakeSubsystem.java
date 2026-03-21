@@ -9,6 +9,7 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.MotorFollowerConstants;
 import frc.robot.Constants.MotorIDs;
@@ -22,8 +23,8 @@ public class IntakeSubsystem extends SubsystemBase {
   private final SparkMax intakeMotor = new SparkMax(MotorIDs.IntakeMotor, MotorType.kBrushless);
 
   // Soft limits
-  private static final double FORWARD_SOFT_LIMIT = 0.425;
-  private static final double REVERSE_SOFT_LIMIT = -0.01;
+  private static final double FORWARD_SOFT_LIMIT = .00;
+  private static final double REVERSE_SOFT_LIMIT = -.425;
 
   // Motor speeds
   private static final double DEPLOY_SPEED = 0.1;
@@ -88,11 +89,17 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void deployIntake() {
-    leaderMotor.set(DEPLOY_SPEED);
+    // return startEnd(
+    /*() -> */leaderMotor.set(DEPLOY_SPEED);
+    // () -> StopIntakePivot()
+    // ).until(() -> getPosition() >= FORWARD_SOFT_LIMIT);
   }
 
   public void stowIntake() {
-    leaderMotor.set(-STOW_SPEED);
+    // return startEnd(
+    /*() -> */leaderMotor.set(-STOW_SPEED);
+    // () -> StopIntakePivot()
+    /*).until(() -> getPosition() <= REVERSE_SOFT_LIMIT);*/
   }
 
   public void StopIntakePivot() { // Apply small upward voltage to hold against gravity
