@@ -4,6 +4,13 @@
 
 package frc.robot.subsystems;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -17,6 +24,9 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
 import com.ctre.phoenix6.hardware.Pigeon2;
+
+import java.lang.invoke.TypeDescriptor.OfMethod;
+
 import com.ctre.phoenix6.StatusSignal;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.math.controller.PIDController;
@@ -34,9 +44,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class DriveSubsystem extends SubsystemBase {
 
   private final PIDController m_headingController = new PIDController(0.02, 0.0, 0.001);
-  
+
   public boolean rotateBool = false;
-  
+
   // Create MAXSwerveModules
   private final MAXSwerveModule m_frontLeft = new MAXSwerveModule(
       MotorIDs.kFrontLeftDrivingCanId,
@@ -58,19 +68,19 @@ public class DriveSubsystem extends SubsystemBase {
       MotorIDs.kRearRightTurningCanId,
       DriveConstants.kBackRightChassisAngularOffset);
 
-  
   // The gyro sensor
-  //public final static Navx old_m_gyro = new Navx(0, 100);
+  // public final static Navx old_m_gyro = new Navx(0, 100);
   public final static Pigeon2 m_gyro = new Pigeon2(0);
 
-  //public final static ADIS16470_IMU archived_m_gyro = new ADIS16470_IMU();
+  // public final static ADIS16470_IMU archived_m_gyro = new ADIS16470_IMU();
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
       DriveConstants.kDriveKinematics,
-      //Rotation2d.fromDegrees(archived_m_gyro.getAngle(IMUAxis.kZ)),
-      //m_gyro.getYaw().toString().replaceAll("[^0-9.]", "")) is the new convertion for angle to doubles
-      //m_gyro.getYaw().getValue().in(Units.Degrees) ;; new conversion
+      // Rotation2d.fromDegrees(archived_m_gyro.getAngle(IMUAxis.kZ)),
+      // m_gyro.getYaw().toString().replaceAll("[^0-9.]", "")) is the new convertion
+      // for angle to doubles
+      // m_gyro.getYaw().getValue().in(Units.Degrees) ;; new conversion
       Rotation2d.fromDegrees(m_gyro.getYaw().getValue().in(Units.Degrees)),
       new SwerveModulePosition[] {
           m_frontLeft.getPosition(),
@@ -84,9 +94,32 @@ public class DriveSubsystem extends SubsystemBase {
     // Usage reporting for MAXSwerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
 
-    m_headingController.setTolerance(2.0,4.0);
+    m_headingController.setTolerance(2.0, 4.0);
 
     m_headingController.enableContinuousInput(-180, 180);
+  }
+
+  public ChassisSpeeds getSpeeds() {
+    return speeds;
+  }
+
+  ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+      0, 0, 0, Rotation2d.fromDegrees(0.0));
+
+  public void setSpeeds(ChassisSpeeds speeds) {
+    System.out.println(speeds);
+    this.speeds = speeds;
+
+    if (this.speeds.omegaRadiansPerSecond >= -.1 && this.speeds.omegaRadiansPerSecond <= .1) {
+      drive(this.speeds.vxMetersPerSecond, this.speeds.vyMetersPerSecond, 0, true);
+    } else {
+      if (this.speeds.omegaRadiansPerSecond < 0) {
+        this.speeds.omegaRadiansPerSecond = -this.speeds.omegaRadiansPerSecond;
+      }
+      drive(this.speeds.vxMetersPerSecond, this.speeds.vyMetersPerSecond, this.speeds.omegaRadiansPerSecond * .04,
+          true);
+    }
+    drive(this.speeds.vxMetersPerSecond, this.speeds.vyMetersPerSecond, this.speeds.omegaRadiansPerSecond, false);
   }
 
   @Override
@@ -190,14 +223,16 @@ public class DriveSubsystem extends SubsystemBase {
 
   /** Zeroes the heading of the robot. @return Err: 1, OK: 0 */
   public int zeroHeading() {
-    System.out.print("Zeroed");
+    System.out.println("Zeroed");
     return m_gyro.setYaw(0.0).isOK() ? 0 : 1;
-    //archived_m_gyro.reset();
+    // archived_m_gyro.reset();
   }
 
-
-/** Old StopAtAngle function, new one below. use this function without the overload boolean. */
-public void StopAtAngle(int angle, double rot, boolean overloadOld) {
+  /**
+   * Old StopAtAngle function, new one below. use this function without the
+   * overload boolean.
+   */
+  public void StopAtAngle(int angle, double rot, boolean overloadOld) {
     double rotationSpeed;
     if (Math.round(getHeading()) <= angle + 5 && Math.round(getHeading()) >= angle - 5) {
       rotationSpeed = 0;
@@ -213,39 +248,38 @@ public void StopAtAngle(int angle, double rot, boolean overloadOld) {
     drive(0, 0, rotationSpeed, true);
   }
 
+  /** Stops at angle inputted into the angle params */
+  public void StopAtAngle(int angle, double rot) {
 
-/** Stops at angle inputted into the angle params */
-public void StopAtAngle(int angle, double rot) {
-  
-  System.out.println("Calculating Rotation...");
-  double rotationOutput = m_headingController.calculate(getHeading(), angle);
-  rotationOutput = MathUtil.clamp(rotationOutput, -rot, rot);
+    System.out.println("Calculating Rotation...");
+    double rotationOutput = m_headingController.calculate(getHeading(), angle);
+    rotationOutput = MathUtil.clamp(rotationOutput, -rot, rot);
 
-  if (m_headingController.atSetpoint()) {
-    System.out.println("At Setpoint");
-    drive(0,0,0, false);
-    return;
-  }
-
-  System.out.println("Running rotation...");
-  drive(0, 0, rotationOutput, false);
-  }
-
-  
-  /** Stops At two angles consecutivly */
-  /*
-  public void StopAtAngle(int angle1, double rot1, int angle2, double rot2, int Seconds) {
-    StopAtAngle(angle1, rot1);
-
-    try {
-      wait(Seconds*1000);
-    } catch (Exception e) {
-      System.out.println("Thread paused...");
+    if (m_headingController.atSetpoint()) {
+      System.out.println("At Setpoint");
+      drive(0, 0, 0, false);
+      return;
     }
 
-    StopAtAngle(angle2, rot2);
+    System.out.println("Running rotation...");
+    drive(0, 0, rotationOutput, false);
   }
-  */
+
+  /** Stops At two angles consecutivly */
+  /*
+   * public void StopAtAngle(int angle1, double rot1, int angle2, double rot2, int
+   * Seconds) {
+   * StopAtAngle(angle1, rot1);
+   * 
+   * try {
+   * wait(Seconds*1000);
+   * } catch (Exception e) {
+   * System.out.println("Thread paused...");
+   * }
+   * 
+   * StopAtAngle(angle2, rot2);
+   * }
+   */
   public void StopAtPosition(Double posX, double posY, double speed, double currentPosX, double currentPosY) {
     double tempXSpeed;
     double tempYSpeed;
@@ -258,7 +292,7 @@ public void StopAtAngle(int angle, double rot) {
         tempXSpeed *= -1.0;
       }
     }
-    
+
     if (getPose().getY() <= posY + .1 && getPose().getY() >= posY - .1) {
       tempYSpeed = 0.0;
     } else {
@@ -282,7 +316,7 @@ public void StopAtAngle(int angle, double rot) {
     } else if (posX != 0.0 && posY != 0.0) {
       StopAtPosition(posX, posY, speed, 0, 0);
     } else {
-      System.out.print("Error Occured. Position not ran");
+      System.out.println("Error Occured. Position not ran");
     }
   }
 
@@ -292,7 +326,8 @@ public void StopAtAngle(int angle, double rot) {
    * @return the robot's heading in degrees, from -180 to 180
    */
   public double getHeading() {
-    //return Rotation2d.fromDegrees(m_gyro.getYaw().getValue().in(Units.Degrees)).getDegrees();
+    // return
+    // Rotation2d.fromDegrees(m_gyro.getYaw().getValue().in(Units.Degrees)).getDegrees();
     return m_gyro.getYaw().getValue().in(Units.Degrees);
   }
 
@@ -302,8 +337,10 @@ public void StopAtAngle(int angle, double rot) {
    * @return The turn rate of the robot, in degrees per second
    */
   public StatusSignal<LinearAcceleration> getTurnRate() {
-    //return archived_m_gyro.getRate(IMUAxis.kZ) * (DriveConstants.kGyroReversed ? -1.0 : 1.0);
+    // return archived_m_gyro.getRate(IMUAxis.kZ) * (DriveConstants.kGyroReversed ?
+    // -1.0 : 1.0);
     return m_gyro.getAccelerationX(); // -- not tested
-    //return m_gyro.getAngularVel()[1] * (DriveConstants.kGyroReversed ? -1.0 : 1.0); // newer version -- not tested
+    // return m_gyro.getAngularVel()[1] * (DriveConstants.kGyroReversed ? -1.0 :
+    // 1.0); // newer version -- not tested
   }
 }

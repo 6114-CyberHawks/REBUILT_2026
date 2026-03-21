@@ -45,11 +45,11 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
   }
 
-  @Override
-  public void robotInit() {
-    // CameraServer.startAutomaticCapture();
-    super.robotInit();
-  }
+  // @Override
+  // public void robotInit() {
+  //   CameraServer.startAutomaticCapture();
+  //   super.robotInit();
+  // }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override

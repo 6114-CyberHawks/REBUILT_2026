@@ -40,6 +40,7 @@ public class AlmostDataManager extends SubsystemBase {
       AutoSelection.setDefaultOption("None", "N");
       AutoSelection.addOption("Left", "L");
       AutoSelection.addOption("Right", "R");
+      AutoSelection.addOption("Test Auto", "Test");
 
       SmartDashboard.putData("Auto Mode Selector", AutoSelection);
 
@@ -74,17 +75,18 @@ public class AlmostDataManager extends SubsystemBase {
 
   @Override
   public void periodic() {
-    try {
-      switch (AutoSelection.getSelected()) {
-        case "L" -> s_AutonomousModeManager.putAutonomousMode(1);
-        case "R" -> s_AutonomousModeManager.putAutonomousMode(2);
-        default -> s_AutonomousModeManager.putAutonomousMode(0);
-      }
+    // try {
+    //   switch (AutoSelection.getSelected()) {
+    //     case "L" -> s_AutonomousModeManager.putAutonomousMode(1);
+    //     case "R" -> s_AutonomousModeManager.putAutonomousMode(2);
+    //     case "Test" -> s_AutonomousModeManager.putAutonomousMode(3);
+    //     default -> s_AutonomousModeManager.putAutonomousMode(0);
+    //   }
 
-      AutoModeDisplayTable.set(s_AutonomousModeManager.getAutonomousMode());
-    } catch (Exception e) {
-      System.err.println("Error occured (Under normal circumstances, this should be fixed if you're going to use it.): " + e);
-    }
+    //   AutoModeDisplayTable.set(s_AutonomousModeManager.getAutonomousMode());
+    // } catch (Exception e) {
+    //   System.err.println("Error occured (Under normal circumstances, this should be fixed if you're going to use it.): " + e);
+    // }
     //if (s_AutonomousModeManager != null) {
     //  switch (AutoSelection.getSelected()) {
     //    case "L" -> s_AutonomousModeManager.putAutonomousMode(1);

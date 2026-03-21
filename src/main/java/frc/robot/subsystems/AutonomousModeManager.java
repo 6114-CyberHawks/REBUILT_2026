@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -15,7 +17,7 @@ public class AutonomousModeManager extends SubsystemBase {
   private AutonomousRight c_AutonomousRight;
 
   private Command c_Autonomous;
-
+  
   /** Creates a new AutonomousModeManager. */
   public AutonomousModeManager(AutonomousLeft tc_AutonomousLeft, AutonomousRight tc_AutonomousRight) {
     c_AutonomousLeft = tc_AutonomousLeft;
@@ -24,31 +26,35 @@ public class AutonomousModeManager extends SubsystemBase {
     c_Autonomous = null;
   }
 
-
   public Command putAutonomousMode(int Selection) {
     if (Selection == 1) {
       c_Autonomous = c_AutonomousLeft;
     } else if (Selection == 2) {
       c_Autonomous = c_AutonomousRight;
+    } else if (Selection == 3) {
+      c_Autonomous = new PathPlannerAuto("Test");
     } else {
       c_Autonomous = null;
     }
-
     return c_Autonomous;
+
   }
+
   /**
-   * Will return: Left if left side autonomous mode is selected, right if right side autonomous, none if no mode is selected.
+   * Will return: Left if left side autonomous mode is selected, right if right
+   * side autonomous, none if no mode is selected.
+   * 
    * @return a string, all capitalized.
    */
   public String getAutonomousMode() {
     if (c_Autonomous == c_AutonomousLeft) {
-    //   System.out.println("Left Auto mode selected");
+      // System.out.println("Left Auto mode selected");
       return "Left";
     } else if (c_Autonomous == c_AutonomousRight) {
-    //   System.out.println("Right Auto mode selected");
+      // System.out.println("Right Auto mode selected");
       return "Right";
     } else {
-    //   System.out.println("No Auto mode selected");
+      // System.out.println("No Auto mode selected");
       return "None";
     }
   }
@@ -64,7 +70,6 @@ public class AutonomousModeManager extends SubsystemBase {
   public Command getAutonomousModeCommand() {
     return c_Autonomous;
   }
-
 
   @Override
   public void periodic() {

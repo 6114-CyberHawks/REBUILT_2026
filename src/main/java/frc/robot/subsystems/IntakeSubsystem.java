@@ -81,10 +81,6 @@ public class IntakeSubsystem extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("IntakePivot/Position (rotations)", getPosition());
     SmartDashboard.putNumber("IntakePivot/Position (degrees)", getPositionDegrees());
-    SmartDashboard.putNumber("IntakePivot/Leader Current (A)",
-        leaderMotor.getOutputCurrent());
-    SmartDashboard.putNumber("IntakePivot/Applied Output",
-        leaderMotor.getAppliedOutput());
     SmartDashboard.putBoolean("IntakePivot/At Forward Limit",
         getPosition() >= FORWARD_SOFT_LIMIT - 0.01);
     SmartDashboard.putBoolean("IntakePivot/At Reverse Limit",

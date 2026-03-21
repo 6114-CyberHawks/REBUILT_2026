@@ -6,6 +6,16 @@ package frc.robot;
 
 import frc.robot.Constants.ButtonBoxIDs;
 import frc.robot.Constants.OperatorConstants;
+
+import java.util.jar.Attributes.Name;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.math.MathUtil;
 // import frc.robot.commands.DecreaseFeedSpeed;
 import frc.robot.commands.DecreaseShootSpeed;
@@ -34,10 +44,14 @@ import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -66,7 +80,7 @@ public class RobotContainer {
   private final HoodSubsystem s_HoodSubsystem = new HoodSubsystem();
   private final IntakeSubsystem s_IntakeSubsystem = new IntakeSubsystem();
   private final ClimberSubsystem s_ClimberSubsystem = new ClimberSubsystem();
-  private final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  private final DriveSubsystem s_robotDrive = new DriveSubsystem();
   private final AutonomousModeManager s_AutonomousModeManager;
   private final AlmostDataManager s_DataTableManager;
 
@@ -101,6 +115,10 @@ public class RobotContainer {
 
   private final AutonomousLeft c_AutonomousLeft;
   private final AutonomousRight c_AutonomousRight;
+
+  private final SendableChooser<Command> autoChooser;
+
+  
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final XboxController m_driverController = new XboxController(OperatorConstants.kDriverControllerPort);
@@ -162,8 +180,9 @@ public class RobotContainer {
     c_StopClimb = new StopClimb(s_ClimberSubsystem);
 
     // autos
-    c_AutonomousLeft = new AutonomousLeft(m_robotDrive, s_DataTableManager, s_HoodSubsystem, s_TurretSubsystem);
-    c_AutonomousRight = new AutonomousRight(m_robotDrive, s_DataTableManager, s_HoodSubsystem, s_TurretSubsystem, s_IntakeSubsystem, s_HopperSubsystem);
+    c_AutonomousLeft = new AutonomousLeft(s_robotDrive, s_DataTableManager, s_HoodSubsystem, s_TurretSubsystem);
+    c_AutonomousRight = new AutonomousRight(s_robotDrive, s_DataTableManager, s_HoodSubsystem, s_TurretSubsystem,
+        s_IntakeSubsystem, s_HopperSubsystem);
 
     s_AutonomousModeManager = new AutonomousModeManager(c_AutonomousLeft, c_AutonomousRight);
 
@@ -174,11 +193,11 @@ public class RobotContainer {
     configureBindings();
 
     // Configure default commands
-    m_robotDrive.setDefaultCommand(
+    s_robotDrive.setDefaultCommand(
         // The left stick controls translation of the robot.
         // Turning is controlled by the X axis of the right stick.
         new RunCommand(
-            () -> m_robotDrive.drive(
+            () -> s_robotDrive.drive(
                 /*
                  * -MathUtil.applyDeadband(m_driverController.getLeftY(),
                  * OIConstants.kDriveDeadband), // Drive
@@ -192,7 +211,58 @@ public class RobotContainer {
                 -modifyAxis(m_driverController.getRightX(), 4, 0.075),
 
                 true),
-            m_robotDrive));
+            s_robotDrive));
+
+    // AUTO
+    RobotConfig config = null;
+    try {
+      config = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    // configure commands
+    NamedCommands.registerCommand("LowHood", new InstantCommand(s_HoodSubsystem::setLowPosition, s_HoodSubsystem));
+    NamedCommands.registerCommand("MidHood", new InstantCommand(s_HoodSubsystem::setMidPosition, s_HoodSubsystem));
+    NamedCommands.registerCommand("HighHood", new InstantCommand(s_HoodSubsystem::setHighPosition, s_HoodSubsystem));
+    NamedCommands.registerCommand("SlowTurret", new StopShooter(s_TurretSubsystem));
+    NamedCommands.registerCommand("RaiseClimb", new SetClimb(s_ClimberSubsystem, 70));
+    NamedCommands.registerCommand("LowerClimb", new SetClimb(s_ClimberSubsystem, 0));
+    // final Command feedCommandGroup = new ParallelCommandGroup(
+    // new FeedForward(s_TurretSubsystem),
+    // new HopperForward(s_HopperSubsystem));
+    // NamedCommands.registerCommand("Feed", feedCommandGroup);
+    NamedCommands.registerCommand("Feed",
+        new FeedForward(s_TurretSubsystem).alongWith(new HopperForward(s_HopperSubsystem)));
+    NamedCommands.registerCommand("DeployIntake", new DeployIntake(s_IntakeSubsystem).withTimeout(2));
+    NamedCommands.registerCommand("RunIntake", new RunIntake(s_IntakeSubsystem));
+    NamedCommands.registerCommand("StopIntake", new StopIntake(s_IntakeSubsystem));
+    NamedCommands.registerCommand("ShootFuel", new ShootTurret(s_TurretSubsystem));
+
+    // configure AutoBuilder last
+    AutoBuilder.configure(
+        s_robotDrive::getPose, // robot pose supplier
+        s_robotDrive::resetOdometry, // method to reset odomotry
+        s_robotDrive::getSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        (speeds, feedforwards) -> s_robotDrive.setSpeeds(speeds), // method that will drive ROBOT RELATVE
+                                                                  // Chassisspeeds
+
+        new PPHolonomicDriveController( // built in path controller
+            new PIDConstants(1, .00, 0), // translation pids
+            new PIDConstants(1.5, .00, 0) // rotation pids
+        ),
+        config,
+        () -> {
+          var alliance = DriverStation.getAlliance();
+          if (alliance.isPresent()) {
+            return alliance.get() == DriverStation.Alliance.Red;
+          }
+          return false;
+        },
+        s_robotDrive);
+    
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   /**
@@ -212,7 +282,7 @@ public class RobotContainer {
   private void configureBindings() {
 
     new JoystickButton(m_driverController, XboxController.Button.kStart.value)
-        .onTrue(new InstantCommand(() -> m_robotDrive.zeroHeading(), m_robotDrive));
+        .onTrue(new InstantCommand(() -> s_robotDrive.zeroHeading(), s_robotDrive));
 
     // turret / hopper
     new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
@@ -338,7 +408,7 @@ public class RobotContainer {
       System.out.println("An auto was selected");
     }
 
-    return s_AutonomousModeManager.getAutonomousModeCommand();
+    return autoChooser.getSelected()/*new PathPlannerAuto("test climb")/*s_AutonomousModeManager.getAutonomousModeCommand()*/;
   }
 
 }
