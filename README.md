@@ -6,3 +6,4 @@
 - Studica
 - CTRE-Phoenix (v6)
 - WPILib-New-Commands
+- PathPlannerLib
