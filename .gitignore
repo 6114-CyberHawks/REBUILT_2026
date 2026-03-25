@@ -186,8 +186,7 @@ compile_commands.json
 # Eclipse generated file for annotation processors
 .factorypath
 
-# ignore everything except for src & gitignore
+# ignore everything except for src
 *
 !src/
-!src/**
 !.gitignore

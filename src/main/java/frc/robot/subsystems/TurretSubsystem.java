@@ -19,6 +19,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DIOPortIDs;
@@ -28,6 +29,7 @@ import frc.robot.Constants.NeoMotorConstants;
 
 public class TurretSubsystem extends SubsystemBase {
   private final SparkMax TurretShootLeader = new SparkMax(MotorIDs.TurretShootLeader, MotorType.kBrushless);
+  private final RelativeEncoder encoder = TurretShootLeader.getEncoder();
   private final SparkClosedLoopController pidController = TurretShootLeader.getClosedLoopController();
 
   private final SparkMax TurretShootFollower1 = new SparkMax(MotorIDs.TurretShootFollower1, MotorType.kBrushless);
@@ -54,7 +56,7 @@ public class TurretSubsystem extends SubsystemBase {
     ConfigSparks();
   }
 
-  public void ConfigSparks() {    
+  public void ConfigSparks() {
     SparkMaxConfig ShootLeaderConfig = new SparkMaxConfig(); // leader shooter
     ShootLeaderConfig
         .smartCurrentLimit(NeoMotorConstants.ShooterCurrentLimit).idleMode(IdleMode.kCoast).closedLoop
@@ -65,10 +67,9 @@ public class TurretSubsystem extends SubsystemBase {
         .velocityFF(kFF, ClosedLoopSlot.kSlot0)
         .outputRange(-1, 1, ClosedLoopSlot.kSlot0);
     ShootLeaderConfig.closedLoop
-        .allowedClosedLoopError(10, ClosedLoopSlot.kSlot0)
-        .maxMotion
-            .cruiseVelocity(10000, ClosedLoopSlot.kSlot0)
-            .maxAcceleration(3000, ClosedLoopSlot.kSlot0);
+        .allowedClosedLoopError(10, ClosedLoopSlot.kSlot0).maxMotion
+        .cruiseVelocity(10000, ClosedLoopSlot.kSlot0)
+        .maxAcceleration(6000, ClosedLoopSlot.kSlot0);
     ShootLeaderConfig
         .voltageCompensation(12.0)
         .inverted(false);
@@ -77,35 +78,35 @@ public class TurretSubsystem extends SubsystemBase {
     ShootFollower1Config
         .smartCurrentLimit(NeoMotorConstants.ShooterCurrentLimit).idleMode(IdleMode.kCoast).closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-        // .p(kP)
-        // .i(kI)
-        // .d(kD)
-        // .velocityFF(kFF)
-        // .outputRange(-1, 1);
+    // .p(kP)
+    // .i(kI)
+    // .d(kD)
+    // .velocityFF(kFF)
+    // .outputRange(-1, 1);
     ShootFollower1Config
         .follow(TurretShootLeader, MotorFollowerConstants.TurretFollower1IsOppositeOrientationAsLeader);
-    ShootFollower1Config.closedLoop
-        .allowedClosedLoopError(2, ClosedLoopSlot.kSlot0)
-        .maxMotion
-            .cruiseVelocity(10000, ClosedLoopSlot.kSlot0)
-            .maxAcceleration(3000, ClosedLoopSlot.kSlot0);
+    // ShootFollower1Config.closedLoop
+    // .allowedClosedLoopError(2, ClosedLoopSlot.kSlot0)
+    // .maxMotion
+    // .cruiseVelocity(10000, ClosedLoopSlot.kSlot0)
+    // .maxAcceleration(3000, ClosedLoopSlot.kSlot0);
 
     SparkMaxConfig ShootFollower2Config = new SparkMaxConfig(); // follower shooter2
     ShootFollower2Config
         .smartCurrentLimit(NeoMotorConstants.ShooterCurrentLimit).idleMode(IdleMode.kCoast).closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-        // .p(kP)
-        // .i(kI)
-        // .d(kD)
-        // .velocityFF(kFF)
-        // .outputRange(-1, 1);
+    // .p(kP)
+    // .i(kI)
+    // .d(kD)
+    // .velocityFF(kFF)
+    // .outputRange(-1, 1);
     ShootFollower2Config
         .follow(TurretShootLeader, MotorFollowerConstants.TurretFollower2IsOppositeOrientationAsLeader);
-    ShootFollower2Config.closedLoop
-        .allowedClosedLoopError(2, ClosedLoopSlot.kSlot0)
-        .maxMotion
-            .cruiseVelocity(10000, ClosedLoopSlot.kSlot0)
-            .maxAcceleration(3000, ClosedLoopSlot.kSlot0);
+    // ShootFollower2Config.closedLoop
+    // .allowedClosedLoopError(2, ClosedLoopSlot.kSlot0)
+    // .maxMotion
+    // .cruiseVelocity(10000, ClosedLoopSlot.kSlot0)
+    // .maxAcceleration(3000, ClosedLoopSlot.kSlot0);
 
     SparkMaxConfig FeedConfig = new SparkMaxConfig(); // feed
     FeedConfig
@@ -127,6 +128,7 @@ public class TurretSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putBoolean("Turret/Is At RPM", getRPM() == ShootVelocity);
   }
 
   public void DelayMS(int input) {
@@ -141,7 +143,7 @@ public class TurretSubsystem extends SubsystemBase {
   public void FeedForward() {
     FeedTurret.set(FeedSpeed);
   }
-  
+
   public void ReverseFeed() {
     FeedTurret.set(-.2);
   }
@@ -181,5 +183,13 @@ public class TurretSubsystem extends SubsystemBase {
 
   public void StopShooter() {
     pidController.setSetpoint(800, SparkMax.ControlType.kVelocity);
+  }
+
+  public double getRPM() {
+    return encoder.getVelocity();
+  }
+
+  public void setRPM(double rpm) {
+    pidController.setSetpoint(Math.min(rpm, topShootSpeed), SparkMax.ControlType.kVelocity);
   }
 }

@@ -4,65 +4,157 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.LEDPattern;
 // import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 /**
- * The methods in this class are called automatically corresponding to each mode, as described in
- * the TimedRobot documentation. If you change the name of this class or the package after creating
+ * The methods in this class are called automatically corresponding to each
+ * mode, as described in
+ * the TimedRobot documentation. If you change the name of this class or the
+ * package after creating
  * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
+  private String autoName, newAutoName;
+  private final Field2d m_field = new Field2d();
+
+  // LEDs
+  public AddressableLED LEDBar;
+  private AddressableLEDBuffer LEDBarBuffer;
+  private LEDPattern greenLEDs = LEDPattern.solid(Color.kGreen);
+  private LEDPattern yellowLEDs = LEDPattern.solid(Color.kYellow);
+  private LEDPattern redLEDs = LEDPattern.solid(Color.kRed);
+  private static final Distance kLEDSpacing = Units.Meters.of(1 / 12.0);
+  private final LEDPattern redWhiteStripes = LEDPattern.steps(Map.of(
+      0.0, Color.kRed,
+      0.5, Color.kWhite));
+  private final LEDPattern scrollingRedWhite = redWhiteStripes.scrollAtAbsoluteSpeed(
+      Units.MetersPerSecond.of(0.75), // speed
+      kLEDSpacing // spacing between LEDs
+  );
+
   private final RobotContainer m_robotContainer;
 
   /**
-   * This function is run when the robot is first started up and should be used for any
+   * This function is run when the robot is first started up and should be used
+   * for any
    * initialization code.
    */
   public Robot() {
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
+    // Instantiate our RobotContainer. This will perform all our button bindings,
+    // and put our
     // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer();
-  }
 
-  /**
-   * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
-   * that you want ran during disabled, autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
-   * SmartDashboard integrated updating.
-   */
-  @Override
-  public void robotPeriodic() {
-    // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
-    // commands, running already-scheduled commands, removing finished or interrupted commands,
-    // and running subsystem periodic() methods.  This must be called from the robot's periodic
-    // block in order for anything in the Command-based framework to work.
-    CommandScheduler.getInstance().run();
+    LEDBarBuffer = new AddressableLEDBuffer(21);
+    LEDBar = new AddressableLED(0);
+    LEDBar.setLength(LEDBarBuffer.getLength());
+    LEDBar.setData(LEDBarBuffer);
+    LEDBar.start();
+
+    m_robotContainer = new RobotContainer();
+
+    SmartDashboard.putData("Field", m_field);
   }
 
   // @Override
   // public void robotInit() {
-  //   CameraServer.startAutomaticCapture();
+  //   // CameraServer.startAutomaticCapture();
+
   //   super.robotInit();
   // }
 
+  /**
+   * This function is called every 20 ms, no matter the mode. Use this for items
+   * like diagnostics
+   * that you want ran during disabled, autonomous, teleoperated and test.
+   *
+   * <p>
+   * This runs after the mode specific periodic functions, but before LiveWindow
+   * and
+   * SmartDashboard integrated updating.
+   */
+  @Override
+  public void robotPeriodic() {
+    // Runs the Scheduler. This is responsible for polling buttons, adding
+    // newly-scheduled commands, running already-scheduled commands, removing
+    // finished orinterrupted commands,
+    // and running subsystem periodic() methods. This must be called from the
+    // robot's periodic
+    // block in order for anything in the Command-based framework to work.
+    CommandScheduler.getInstance().run();
+
+    // LED BAR SETUP
+    // setup follows {conditional -> <Color>.applyTo(LEDBarBuffer); -> LEDBar.setData(LEDBarBuffer);}
+    scrollingRedWhite.applyTo(LEDBarBuffer);
+
+    LEDBar.setData(LEDBarBuffer);
+
+    var robotPose = m_robotContainer.s_robotDrive.getPose();
+    m_field.setRobotPose(robotPose);
+  }
+
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+  }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    newAutoName = m_robotContainer.getAutonomousCommand().getName();
+    if (autoName != newAutoName) {
+      autoName = newAutoName;
+      if (AutoBuilder.getAllAutoNames().contains(autoName)) {
+        System.out.println("Displaying " + autoName);
+        try {
+          List<PathPlannerPath> pathPlannerPaths = PathPlannerAuto.getPathGroupFromAutoFile(autoName);
+          List<Pose2d> poses = new ArrayList<>();
+          for (PathPlannerPath path : pathPlannerPaths) {
+            poses.addAll(
+                path.getAllPathPoints().stream()
+                    .map(
+                        point -> new Pose2d(
+                            point.position.getX(), point.position.getY(), new Rotation2d()))
+                    .collect(Collectors.toList()));
+          }
+          m_field.getObject("path").setPoses(poses);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
+  }
 
-  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
+  /**
+   * This autonomous runs the autonomous command selected by your
+   * {@link RobotContainer} class.
+   */
   @Override
   public void autonomousInit() {
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
@@ -72,7 +164,8 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+  }
 
   @Override
   public void teleopInit() {
@@ -87,7 +180,8 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+  }
 
   @Override
   public void testInit() {
@@ -97,13 +191,16 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+  }
 
   /** This function is called once when the robot is first started up. */
   @Override
-  public void simulationInit() {}
+  public void simulationInit() {
+  }
 
   /** This function is called periodically whilst in simulation. */
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+  }
 }

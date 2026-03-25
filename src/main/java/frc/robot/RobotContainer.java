@@ -15,8 +15,11 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.MathUtil;
+import frc.robot.commands.AutoAimCommand;
 // import frc.robot.commands.DecreaseFeedSpeed;
 import frc.robot.commands.DecreaseShootSpeed;
 import frc.robot.commands.DeployIntake;
@@ -58,10 +61,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.AutonomousLeft;
-import frc.robot.commands.AutonomousRight;
-import frc.robot.subsystems.AutonomousModeManager;
-import frc.robot.subsystems.AlmostDataManager;
+// import frc.robot.commands.AutonomousLeft;
+// import frc.robot.commands.AutonomousRight;
+// import frc.robot.subsystems.AutonomousModeManager;
+// import frc.robot.subsystems.AlmostDataManager;
 import frc.robot.subsystems.DriveSubsystem;
 
 /**
@@ -81,10 +84,10 @@ public class RobotContainer {
   private final HoodSubsystem s_HoodSubsystem = new HoodSubsystem();
   private final IntakeSubsystem s_IntakeSubsystem = new IntakeSubsystem();
   private final ClimberSubsystem s_ClimberSubsystem = new ClimberSubsystem();
-  private final DriveSubsystem s_robotDrive = new DriveSubsystem();
+  public final DriveSubsystem s_robotDrive = new DriveSubsystem();
   private final VisionSubsystem s_VisionSubsystem = new VisionSubsystem();
-  private final AutonomousModeManager s_AutonomousModeManager;
-  private final AlmostDataManager s_DataTableManager;
+  //private final AutonomousModeManager s_AutonomousModeManager;
+  //private final AlmostDataManager s_DataTableManager;
 
   // The robot's subsystems and commands are defined here...
   // shooter
@@ -115,8 +118,7 @@ public class RobotContainer {
   private final SetClimb c_UnClimb;
   private final StopClimb c_StopClimb;
 
-  private final AutonomousLeft c_AutonomousLeft;
-  private final AutonomousRight c_AutonomousRight;
+  private final AutoAimCommand c_AutoAim;
 
   private final SendableChooser<Command> autoChooser;
 
@@ -146,7 +148,7 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    s_DataTableManager = new AlmostDataManager(null); // DO NOT USE NORMALLY!!
+    //s_DataTableManager = new AlmostDataManager(null); // DO NOT USE NORMALLY!!
 
     // shooter
     c_ShootTurret = new ShootTurret(s_TurretSubsystem);
@@ -181,14 +183,16 @@ public class RobotContainer {
     c_UnClimb = new SetClimb(s_ClimberSubsystem, 70);
     c_StopClimb = new StopClimb(s_ClimberSubsystem);
 
+    c_AutoAim = new AutoAimCommand(s_VisionSubsystem, s_HoodSubsystem, s_TurretSubsystem);
+
     // autos
-    c_AutonomousLeft = new AutonomousLeft(s_robotDrive, s_DataTableManager, s_HoodSubsystem, s_TurretSubsystem);
-    c_AutonomousRight = new AutonomousRight(s_robotDrive, s_DataTableManager, s_HoodSubsystem, s_TurretSubsystem,
-        s_IntakeSubsystem, s_HopperSubsystem);
+    // c_AutonomousLeft = new AutonomousLeft(s_robotDrive, s_DataTableManager, s_HoodSubsystem, s_TurretSubsystem);
+    // c_AutonomousRight = new AutonomousRight(s_robotDrive, s_DataTableManager, s_HoodSubsystem, s_TurretSubsystem,
+    //     s_IntakeSubsystem, s_HopperSubsystem);
 
-    s_AutonomousModeManager = new AutonomousModeManager(c_AutonomousLeft, c_AutonomousRight);
+    // s_AutonomousModeManager = new AutonomousModeManager(c_AutonomousLeft, c_AutonomousRight);
 
-    s_DataTableManager.setAutonomousModeManager(s_AutonomousModeManager);
+    // s_DataTableManager.setAutonomousModeManager(s_AutonomousModeManager);
 
     // initilize commands
     // Configure the trigger bindings
@@ -236,7 +240,7 @@ public class RobotContainer {
     // NamedCommands.registerCommand("Feed", feedCommandGroup);
     NamedCommands.registerCommand("Feed",
         new FeedForward(s_TurretSubsystem).alongWith(new HopperForward(s_HopperSubsystem)));
-    NamedCommands.registerCommand("DeployIntake", new DeployIntake(s_IntakeSubsystem).withTimeout(2));
+    // NamedCommands.registerCommand("DeployIntake", new DeployIntake(s_IntakeSubsystem).withTimeout(2).andThen(StopIntakePivot(s_IntakeSubsystem)));
     NamedCommands.registerCommand("RunIntake", new RunIntake(s_IntakeSubsystem));
     NamedCommands.registerCommand("StopIntake", new StopIntake(s_IntakeSubsystem));
     NamedCommands.registerCommand("ShootFuel", new ShootTurret(s_TurretSubsystem));
@@ -262,8 +266,26 @@ public class RobotContainer {
           return false;
         },
         s_robotDrive);
-    
+
+        PathPlannerPath path = null;
+
+        try {
+            path = PathPlannerPath.fromPathFile("Climb");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        PathConstraints constraints = new PathConstraints(1, 0.5, 10, 5);
+        Command pathfindingCommand = new InstantCommand(() -> {System.err.println("Path is null.");});
+        
+        try {
+            pathfindingCommand = AutoBuilder.pathfindThenFollowPath(path, constraints);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     autoChooser = AutoBuilder.buildAutoChooser();
+    autoChooser.addOption("pathfindingToStart", pathfindingCommand);
     SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
@@ -287,36 +309,45 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> s_robotDrive.zeroHeading(), s_robotDrive));
 
     // turret / hopper
-    new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
+    new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
         .whileTrue(c_ShootTurret).whileTrue(c_hopperForward).whileTrue(c_FeedForward) // held
         .onFalse(c_StopShooter).whileFalse(c_hopperStop).onFalse(c_StopFeed); // released
 
-    new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
+    new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
         .whileTrue(c_ReverseShooter).whileTrue(c_hopperReverse).whileTrue(c_ReverseFeed) // held
         .onFalse(c_StopShooter).onFalse(c_StopFeed).whileFalse(c_hopperStop); // released
+
+    Trigger rightTrigger = new Trigger(() -> m_driverController.getRightTriggerAxis() > 0.2);
+        // rightTrigger.whileTrue(c_AutoAim);
+        rightTrigger.toggleOnTrue(c_AutoAim).onTrue(new InstantCommand(() -> {
+            c_ShootTurret.cancel(); 
+            System.out.println("Shooter Canciled, auto Aim Should Start");
+        }));
 
     new JoystickButton(m_driverController, XboxController.Button.kX.value)
         .onTrue(c_StopShooter);
 
     // Hood
     new JoystickButton(m_driverController, XboxController.Button.kY.value)
-        .onTrue(new InstantCommand(s_HoodSubsystem::incrementPosition, s_HoodSubsystem));
+        .onTrue(new InstantCommand(s_HoodSubsystem::incrementPosition, s_HoodSubsystem))
+        .onTrue(new InstantCommand(() -> c_AutoAim.cancel()));
 
     new JoystickButton(m_driverController, XboxController.Button.kA.value)
-        .onTrue(new InstantCommand(s_HoodSubsystem::decrementPosition, s_HoodSubsystem));
+        .onTrue(new InstantCommand(s_HoodSubsystem::decrementPosition, s_HoodSubsystem))
+        .onTrue(new InstantCommand(() -> c_AutoAim.cancel()));
 
     m_buttonBox1.button(ButtonBoxIDs.HoodClose)
         .onTrue(new InstantCommand(s_HoodSubsystem::setLowPosition, s_HoodSubsystem))
-        .toggleOnTrue(c_ShootTurret);
+        .toggleOnTrue(c_ShootTurret).onTrue(new InstantCommand(() -> c_AutoAim.cancel()));
     m_buttonBox1.button(ButtonBoxIDs.HoodMid)
         .onTrue(new InstantCommand(s_HoodSubsystem::setMidPosition, s_HoodSubsystem))
-        .toggleOnTrue(c_ShootTurret);
+        .toggleOnTrue(c_ShootTurret).onTrue(new InstantCommand(() -> c_AutoAim.cancel()));
     m_buttonBox1.button(ButtonBoxIDs.HoodFar)
         .onTrue(new InstantCommand(s_HoodSubsystem::setHighPosition, s_HoodSubsystem))
-        .toggleOnTrue(c_ShootTurret);
+        .toggleOnTrue(c_ShootTurret).onTrue(new InstantCommand(() -> c_AutoAim.cancel()));
     m_buttonBox1.button(ButtonBoxIDs.HoodPass)
         .onTrue(new InstantCommand(s_HoodSubsystem::setPassPosition, s_HoodSubsystem))
-        .toggleOnTrue(c_ShootTurret);
+        .toggleOnTrue(c_ShootTurret).onTrue(new InstantCommand(() -> c_AutoAim.cancel()));
 
     // Intake
     m_buttonBox2.button(ButtonBoxIDs.DeployIntake)
@@ -404,13 +435,14 @@ public class RobotContainer {
     // * return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0,
     // * false));
     // */
-    if (s_AutonomousModeManager.getAutonomousMode() == "None") {
-      System.out.println("\n\n\nWARNING: NO AUTO SELECTED! Please select an autonomous mode!\n\n\n");
-    } else {
-      System.out.println("An auto was selected");
-    }
+    // if (s_AutonomousModeManager.getAutonomousMode() == "None") {
+    //   System.out.println("\n\n\nWARNING: NO AUTO SELECTED! Please select an autonomous mode!\n\n\n");
+    // } else {
+    //   System.out.println("An auto was selected");
+    // }
 
-    return autoChooser.getSelected()/*new PathPlannerAuto("test climb")/*s_AutonomousModeManager.getAutonomousModeCommand()*/;
+    return autoChooser.getSelected();
+    // return new PathPlannerAuto("straight");
   }
 
 }

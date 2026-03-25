@@ -34,17 +34,17 @@ public class HoodSubsystem extends SubsystemBase {
   // Constants
   private final double manualSpeed = .3;
 
-  public static final double PositionOffset = 0.227;
+  public static final double PositionOffset = 0.2;
 
   // Encoder positions (in rotations of the gearbox output shaft)
   private static final double MIN_POSITION = 0.005 - PositionOffset;
-  private static final double MAX_POSITION = 0.6 -PositionOffset;
+  private static final double MAX_POSITION = 0.5 - PositionOffset;
 
   // Preset positions - in absolute encoder positions
   private static final double LOW_POSITION = 0.070 - PositionOffset;
   private static final double MID_POSITION = 0.224 - PositionOffset;
-  private static final double HIGH_POSITION = 0.360 - PositionOffset;
-  private static final double Pass_POSITION = 0.520 - PositionOffset;
+  private static final double HIGH_POSITION = 0.320 - PositionOffset;
+  private static final double Pass_POSITION = 0.480 - PositionOffset;
 
   // gear ratio on motor to absolute encoder
   private static final double GEAR_RATIO = 16;
@@ -65,7 +65,6 @@ public class HoodSubsystem extends SubsystemBase {
   private double targetPosition = LOW_POSITION;
 
   public HoodSubsystem() {
-    // Set initial target
     targetPosition = getPosition();
   }
 
@@ -139,7 +138,7 @@ public class HoodSubsystem extends SubsystemBase {
   /**
    * Set hood to a specific position
    * 
-   * @param position Target position in encoder rotations (0.0 to 0.3)
+   * @param position Target position in encoder rotations
    */
   public void setPosition(double position) {
     // Clamp position to valid range
@@ -156,7 +155,7 @@ public class HoodSubsystem extends SubsystemBase {
    */
   public void setLowPosition() {
     setPosition(LOW_POSITION);
-    TurretSubsystem.ShootVelocity = 3500;
+    TurretSubsystem.ShootVelocity = 3000;
     TurretSubsystem.FeedSpeed = .9;
   }
 
@@ -165,7 +164,7 @@ public class HoodSubsystem extends SubsystemBase {
    */
   public void setMidPosition() {
     setPosition(MID_POSITION);
-    TurretSubsystem.ShootVelocity = 3400;
+    TurretSubsystem.ShootVelocity = 3200;
     TurretSubsystem.FeedSpeed = .7;
   }
 
@@ -174,7 +173,7 @@ public class HoodSubsystem extends SubsystemBase {
    */
   public void setHighPosition() {
     setPosition(HIGH_POSITION);
-    TurretSubsystem.ShootVelocity = 4000;
+    TurretSubsystem.ShootVelocity = 4200;
     TurretSubsystem.FeedSpeed = .5;
   }
 

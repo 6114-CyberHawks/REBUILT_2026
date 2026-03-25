@@ -10,7 +10,8 @@ import frc.robot.subsystems.ClimberSubsystem;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class SetClimb extends Command {
   private final ClimberSubsystem climbSubsystem;
-  private final double TopSpeed = .8;
+  private final double TopUpSpeed = .8;
+  private final double TopDownSpeed = .4;
 
   @SuppressWarnings("unused") private boolean Lifting;
   @SuppressWarnings("unused") private boolean Lowering;
@@ -45,10 +46,10 @@ public class SetClimb extends Command {
     currentPosition = climbSubsystem.GetEncoderPosition();
     System.out.println("position " + currentPosition);
     if(currentPosition < (desiredPosition - positionTolerance)) {
-      climbSubsystem.SetSpeed(TopSpeed);
+      climbSubsystem.SetSpeed(TopUpSpeed);
       System.out.println("Lower than point called for");
     } else if (currentPosition > (desiredPosition - positionTolerance)) {
-      climbSubsystem.SetSpeed(-TopSpeed);
+      climbSubsystem.SetSpeed(-TopDownSpeed);
       System.out.println("Higher than point called for");
     }
 

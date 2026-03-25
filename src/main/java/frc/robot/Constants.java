@@ -109,7 +109,7 @@ public final class Constants {
 
     // Calculations required for driving motor conversion factors and feed forward
     public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
-    public static final double kWheelDiameterMeters = 0.0762;
+    public static final double kWheelDiameterMeters = 0.0735;
     public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
     // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
     // teeth on the bevel pinion
@@ -170,13 +170,66 @@ public final class Constants {
 
     // AprilTag ID for your alliance hub
     public static final int[] ALLIANCE_HUB_TAG_ID_RED = { 1, 2, 3, 4, 5, 8, 9, 10 };
-    public static final int[] ALLIANCE_HUB_TAG_ID_Blue = { 18, 19, 20, 21, 24, 25, 26, 27 };
+    public static final int[] ALLIANCE_HUB_TAG_ID_BLUE = { 18, 19, 20, 21, 24, 25, 26, 27 };
     public static final int[] ALLIANCE_TOWER_TAG_ID_RED = { 15, 16 };
-    public static final int[] ALLIANCE_TOWER_TAG_ID_Blue = { 31, 32 };
+    public static final int[] ALLIANCE_TOWER_TAG_ID_BLUE = { 31, 32 };
+    
+    public static final int RED_HUB_FRONT_CENTER = 10;
+    public static final int RED_HUB_LEFT_CENTER = 5;
+    public static final int RED_HUB_RIGHT_CENTER = 2;
+    public static final int[] RED_HUB_CENTER_TAGS = {
+        RED_HUB_FRONT_CENTER,
+        RED_HUB_LEFT_CENTER,
+        RED_HUB_RIGHT_CENTER
+    };
+
+    public static final int BLUE_HUB_FRONT_CENTER = 26;
+    public static final int BLUE_HUB_LEFT_CENTER = 21;
+    public static final int BLUE_HUB_RIGHT_CENTER = 18;
+
+    // All center tags for Blue hub
+    public static final int[] BLUE_HUB_CENTER_TAGS = {
+        BLUE_HUB_FRONT_CENTER,
+        BLUE_HUB_LEFT_CENTER,
+        BLUE_HUB_RIGHT_CENTER
+    };
+
 
     // Tolerances
     public static final double DISTANCE_TOLERANCE_INCHES = 3.0;
     public static final double ANGLE_TOLERANCE_DEGREES = 2.0;
   }
+
+  public static final class ShooterConstants {
+    // Zone-based shooting lookup table
+    // Format: {distance (inches), shooter RPM, hood angle (rotations)}
+
+    /** 
+    * Zone-based shooting lookup table.
+    <div>
+    * Format: {distance (inches), shooter RPM, hood angle (rotations)}
+    */
+    public static final double[][] SHOOTING_ZONES = { // TODO: READ THIS BEFORE ANYTHING Poision 0 is at .070 and the max is at .480
+        {30.0, 3000, 0.07},   // Close shot 1
+        {60.0, 3000, 0.07},   // Close shot 2
+        {92.0, 3025, 0.112},   // Mid-close
+        {124.0, 3050, 0.224},  // Mid
+        {150.0, 3075, 0.224},  // Mid-far
+        {193.0, 3200, 0.22},  // Far shot
+        {235.0, 3400, 0.22}   // Max range
+
+        // distance - RPM, Hood
+    };
+
+    // Interpolation tolerance
+    public static final double DISTANCE_INTERPOLATION_TOLERANCE = 5.0; // inches
+
+    public static final double DEFAULT_SHOOTER_RPM = 4000;
+
+    public static final double RPM_TOLERANCE = 10;
+
+    public static final double HOOD_TOLERANCE = .005;
+}
+
 
 }
