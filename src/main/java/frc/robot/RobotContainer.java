@@ -122,6 +122,8 @@ public class RobotContainer {
 
   private final SendableChooser<Command> autoChooser;
 
+  private final Command shootBalls;
+
   
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -148,6 +150,21 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+    shootBalls = new InstantCommand(() -> {
+
+        s_HoodSubsystem.setLowPosition();
+        s_TurretSubsystem.ShootFuel();
+        s_IntakeSubsystem.deployIntake();
+        s_TurretSubsystem.DelayMS(2000);
+        s_IntakeSubsystem.StopIntakePivot();
+        s_TurretSubsystem.FeedForward();
+        s_TurretSubsystem.DelayMS(2000);
+        s_HopperSubsystem.Forward();
+        s_TurretSubsystem.DelayMS(5000);
+        s_TurretSubsystem.StopFeed();
+        s_TurretSubsystem.StopShooter();
+        s_HopperSubsystem.Stop();
+    });
     //s_DataTableManager = new AlmostDataManager(null); // DO NOT USE NORMALLY!!
 
     // shooter
@@ -240,10 +257,12 @@ public class RobotContainer {
     // NamedCommands.registerCommand("Feed", feedCommandGroup);
     NamedCommands.registerCommand("Feed",
         new FeedForward(s_TurretSubsystem).alongWith(new HopperForward(s_HopperSubsystem)));
-    // NamedCommands.registerCommand("DeployIntake", new DeployIntake(s_IntakeSubsystem).withTimeout(2).andThen(StopIntakePivot(s_IntakeSubsystem)));
+    NamedCommands.registerCommand("DeployIntake", new DeployIntake(s_IntakeSubsystem).withTimeout(2).andThen(new StopIntakePivot(s_IntakeSubsystem)));
     NamedCommands.registerCommand("RunIntake", new RunIntake(s_IntakeSubsystem));
     NamedCommands.registerCommand("StopIntake", new StopIntake(s_IntakeSubsystem));
     NamedCommands.registerCommand("ShootFuel", new ShootTurret(s_TurretSubsystem));
+
+    
 
     // configure AutoBuilder last
     AutoBuilder.configure(
@@ -255,7 +274,7 @@ public class RobotContainer {
 
         new PPHolonomicDriveController( // built in path controller
             new PIDConstants(1, .00, 0), // translation pids
-            new PIDConstants(1.5, .00, 0) // rotation pids
+            new PIDConstants(1, .00, 0) // rotation pids
         ),
         config,
         () -> {
@@ -285,6 +304,7 @@ public class RobotContainer {
         }
 
     autoChooser = AutoBuilder.buildAutoChooser();
+    autoChooser.addOption("shootBalls", shootBalls);
     autoChooser.addOption("pathfindingToStart", pathfindingCommand);
     SmartDashboard.putData("Auto Chooser", autoChooser);
   }

@@ -11,12 +11,16 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -26,6 +30,7 @@ import edu.wpi.first.units.Units;
 import com.ctre.phoenix6.hardware.Pigeon2;
 
 import java.lang.invoke.TypeDescriptor.OfMethod;
+import java.util.Optional;
 
 import com.ctre.phoenix6.StatusSignal;
 import edu.wpi.first.units.measure.LinearAcceleration;
@@ -39,9 +44,12 @@ import edu.wpi.first.math.controller.PIDController;
 
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.MotorIDs;
+import frc.robot.LimelightHelpers;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveSubsystem extends SubsystemBase {
+  private Alliance currentAlliance = Alliance.Red;
+  private boolean useManualAllianceOverride = false;
 
   private final PIDController m_headingController = new PIDController(0.02, 0.0, 0.001);
 

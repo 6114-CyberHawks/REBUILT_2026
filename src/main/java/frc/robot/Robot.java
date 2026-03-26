@@ -124,28 +124,30 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic() {
-    newAutoName = m_robotContainer.getAutonomousCommand().getName();
-    if (autoName != newAutoName) {
-      autoName = newAutoName;
-      if (AutoBuilder.getAllAutoNames().contains(autoName)) {
-        System.out.println("Displaying " + autoName);
-        try {
-          List<PathPlannerPath> pathPlannerPaths = PathPlannerAuto.getPathGroupFromAutoFile(autoName);
-          List<Pose2d> poses = new ArrayList<>();
-          for (PathPlannerPath path : pathPlannerPaths) {
-            poses.addAll(
-                path.getAllPathPoints().stream()
-                    .map(
-                        point -> new Pose2d(
-                            point.position.getX(), point.position.getY(), new Rotation2d()))
-                    .collect(Collectors.toList()));
-          }
-          m_field.getObject("path").setPoses(poses);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }
-    }
+    // This projects the selected auto onto the Field widget for elastic...
+
+    // newAutoName = m_robotContainer.getAutonomousCommand().getName();
+    // if (autoName != newAutoName) {
+    //   autoName = newAutoName;
+    //   if (AutoBuilder.getAllAutoNames().contains(autoName)) {
+    //     System.out.println("Displaying " + autoName);
+    //     try {
+    //       List<PathPlannerPath> pathPlannerPaths = PathPlannerAuto.getPathGroupFromAutoFile(autoName);
+    //       List<Pose2d> poses = new ArrayList<>();
+    //       for (PathPlannerPath path : pathPlannerPaths) {
+    //         poses.addAll(
+    //             path.getAllPathPoints().stream()
+    //                 .map(
+    //                     point -> new Pose2d(
+    //                         point.position.getX(), point.position.getY(), new Rotation2d()))
+    //                 .collect(Collectors.toList()));
+    //       }
+    //       m_field.getObject("path").setPoses(poses);
+    //     } catch (Exception e) {
+    //       e.printStackTrace();
+    //     }
+    //   }
+    // }
   }
 
   /**

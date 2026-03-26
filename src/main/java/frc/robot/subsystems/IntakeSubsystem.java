@@ -24,7 +24,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   // Soft limits
   private static final double FORWARD_SOFT_LIMIT = .00;
-  private static final double REVERSE_SOFT_LIMIT = -.425;
+  private static final double REVERSE_SOFT_LIMIT = -.427;
 
   // Motor speeds
   private static final double DEPLOY_SPEED = 0.1;

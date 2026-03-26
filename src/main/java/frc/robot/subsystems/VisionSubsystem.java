@@ -1,6 +1,9 @@
 package frc.robot.subsystems;
 
-
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -16,6 +19,7 @@ import frc.robot.LimelightHelpers;
 import frc.robot.vision.ShooterCalculator;
 import frc.robot.vision.ScoringPosition;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +30,6 @@ public class VisionSubsystem extends SubsystemBase {
     private final NetworkTableEntry tx;
     private final NetworkTableEntry ty;
     private final NetworkTableEntry tv;
-
-
 
     // Physical constants
     private static final double LIMELIGHT_HEIGHT_INCHES = 24.0;
@@ -49,17 +51,16 @@ public class VisionSubsystem extends SubsystemBase {
 
     // Aiming mode
     public enum AimingMode {
-        CENTER_TAGS_ONLY,    // Only aim at center tags (one per hub side)
-        ALL_HUB_TAGS,        // Aim at any hub tag
-        SPECIFIC_TAG         // Aim at a specific tag ID
+        CENTER_TAGS_ONLY, // Only aim at center tags (one per hub side)
+        ALL_HUB_TAGS, // Aim at any hub tag
+        SPECIFIC_TAG // Aim at a specific tag ID
     }
 
     private AimingMode currentAimingMode = AimingMode.CENTER_TAGS_ONLY;
     private int specificTagID = -1;
 
     // Current shooter calculation
-    private ShooterCalculator.ShooterSettings currentShooterSettings = 
-        ShooterCalculator.ShooterSettings.invalid();
+    private ShooterCalculator.ShooterSettings currentShooterSettings = ShooterCalculator.ShooterSettings.invalid();
 
     public VisionSubsystem() {
         limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
@@ -183,7 +184,7 @@ public class VisionSubsystem extends SubsystemBase {
                 tagsToTrack = getAllHubTags();
                 break;
             case SPECIFIC_TAG:
-                tagsToTrack = (specificTagID > 0) ? new int[]{specificTagID} : getCenterHubTags();
+                tagsToTrack = (specificTagID > 0) ? new int[] { specificTagID } : getCenterHubTags();
                 break;
             default:
                 tagsToTrack = getCenterHubTags();
@@ -334,8 +335,8 @@ public class VisionSubsystem extends SubsystemBase {
      * Get recommended RPM for current distance
      */
     public double getRecommendedRPM() {
-        return currentShooterSettings.isValid ? currentShooterSettings.rpm : 
-            Constants.ShooterConstants.DEFAULT_SHOOTER_RPM;
+        return currentShooterSettings.isValid ? currentShooterSettings.rpm
+                : Constants.ShooterConstants.DEFAULT_SHOOTER_RPM;
     }
 
     /**
@@ -392,13 +393,15 @@ public class VisionSubsystem extends SubsystemBase {
     // ========================================
 
     public boolean isAngleAligned() {
-        if (!hasValidTarget()) return false;
+        if (!hasValidTarget())
+            return false;
         double error = Math.abs(getHorizontalOffset() - currentTarget.getTargetAngle());
         return error < ANGLE_TOLERANCE_DEGREES;
     }
 
     public boolean isDistanceCorrect() {
-        if (!hasValidTarget()) return false;
+        if (!hasValidTarget())
+            return false;
         double distance = getDistanceToHub();
         double targetDistance = currentTarget.getTargetDistance();
         return Math.abs(distance - targetDistance) < DISTANCE_TOLERANCE_INCHES;
@@ -409,17 +412,20 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public double getDistanceError() {
-        if (!hasValidTarget()) return 0.0;
+        if (!hasValidTarget())
+            return 0.0;
         return getDistanceToHub() - currentTarget.getTargetDistance();
     }
 
     public double getAngleError() {
-        if (!hasValidTarget()) return 0.0;
+        if (!hasValidTarget())
+            return 0.0;
         return getHorizontalOffset() - currentTarget.getTargetAngle();
     }
 
     public double getAlignmentQuality() {
-        if (!hasValidTarget()) return 0.0;
+        if (!hasValidTarget())
+            return 0.0;
 
         double distanceError = Math.abs(getDistanceError());
         double distanceQuality = Math.max(0, 1.0 - (distanceError / (DISTANCE_TOLERANCE_INCHES * 3)));
@@ -485,4 +491,3 @@ public class VisionSubsystem extends SubsystemBase {
         return new ArrayList<>(scoringPositions);
     }
 }
-
