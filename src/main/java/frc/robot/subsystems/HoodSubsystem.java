@@ -43,7 +43,7 @@ public class HoodSubsystem extends SubsystemBase {
   // Preset positions - in absolute encoder positions
   private static final double LOW_POSITION = 0.070 - PositionOffset;
   private static final double MID_POSITION = 0.224 - PositionOffset;
-  private static final double HIGH_POSITION = 0.320 - PositionOffset;
+  private static final double HIGH_POSITION = 0.340 - PositionOffset;
   private static final double Pass_POSITION = 0.480 - PositionOffset;
 
   // gear ratio on motor to absolute encoder
@@ -173,7 +173,7 @@ public class HoodSubsystem extends SubsystemBase {
    */
   public void setHighPosition() {
     setPosition(HIGH_POSITION);
-    TurretSubsystem.ShootVelocity = 4200;
+    TurretSubsystem.ShootVelocity = 4350;
     TurretSubsystem.FeedSpeed = .5;
   }
 
